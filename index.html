@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DrumFeather · 鼓羽</title>
+<meta name="description" content="Designer · Sound design beginner · Drum enthusiast · AI Craft practitioner — four threads in one workshop.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* —— 视觉变量延续 Jazz 项目(snare_dial_v5.html),identity 一致是 4 个分支共享同一气质的底座 —— */
+  :root {
+    --cream: #ede5d2;
+    --cream-deep: #e3d9bf;
+    --cream-card: #f3ecd9;
+    --kraft: #cdb88a;
+    --kraft-deep: #b89e6c;
+    --ink: #3a342a;
+    --ink-soft: rgba(58, 52, 42, 0.66);
+    --ink-fade: rgba(58, 52, 42, 0.38);
+    --ink-faint: rgba(58, 52, 42, 0.22);
+    --label-red: #c1463a;
+
+    --font-serif: 'Noto Serif SC', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    font-weight: 400;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 88px 32px 64px;
+  }
+
+  /* ============ Hero ============ */
+  .hero {
+    margin-bottom: 80px;
+  }
+  .name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+  .name-en {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    font-size: 44px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .name-cn {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--ink-soft);
+    letter-spacing: 0.06em;
+  }
+  .tagline {
+    font-size: 21px;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--ink);
+    max-width: 640px;
+    margin-bottom: 18px;
+  }
+  .threads {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+  }
+  .thread-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .thread-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--label-red);
+  }
+
+  /* ============ Section ============ */
+  .section {
+    margin-bottom: 64px;
+    padding-top: 32px;
+    border-top: 1px solid var(--ink-faint);
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--ink-fade);
+    text-transform: uppercase;
+  }
+  .section-title {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: 24px;
+    color: var(--ink);
+  }
+  .section-note {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-fade);
+    letter-spacing: 0.05em;
+    margin-left: auto;
+  }
+
+  /* ============ Card ============ */
+  .card {
+    display: grid;
+    grid-template-columns: 130px 1fr auto;
+    gap: 28px;
+    align-items: start;
+    padding: 22px 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.25s ease, padding-left 0.25s ease, padding-right 0.25s ease;
+    border-top: 1px solid var(--ink-faint);
+  }
+  .card:first-of-type { border-top: none; padding-top: 8px; }
+  .card.live:hover {
+    background: var(--cream-deep);
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .card.empty { opacity: 0.65; cursor: default; }
+
+  .card-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.10em;
+    color: var(--ink-fade);
+    text-transform: uppercase;
+    line-height: 1.6;
+  }
+  .card-meta .kind {
+    display: block;
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.1em;
+  }
+  .badge.live {
+    background: var(--label-red);
+    color: var(--cream);
+  }
+  .badge.wip {
+    background: var(--kraft);
+    color: var(--ink);
+  }
+
+  .card-body h3 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .card-body .title-sub {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-fade);
+    letter-spacing: 0.04em;
+    margin-bottom: 12px;
+  }
+  .card-body p {
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    max-width: 480px;
+  }
+
+  .card-arrow {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    color: var(--ink-fade);
+    align-self: center;
+  }
+  .card.empty .card-arrow { opacity: 0; }
+
+  .placeholder {
+    padding: 12px 0;
+    color: var(--ink-fade);
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.7;
+  }
+
+  /* ============ About ============ */
+  .about {
+    margin-bottom: 60px;
+    padding-top: 32px;
+    border-top: 1px solid var(--ink-faint);
+  }
+  .about p {
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: var(--ink-soft);
+    max-width: 620px;
+    margin-bottom: 16px;
+  }
+  .contacts {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 22px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+  .contacts a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink-faint);
+    padding-bottom: 1px;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .contacts a:hover {
+    color: var(--label-red);
+    border-color: var(--label-red);
+  }
+
+  /* ============ Footer ============ */
+  footer {
+    border-top: 1px solid var(--ink-faint);
+    padding-top: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-fade);
+    letter-spacing: 0.04em;
+  }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 680px) {
+    body { padding: 56px 22px 48px; }
+    .hero { margin-bottom: 56px; }
+    .name-row { flex-direction: column; gap: 4px; align-items: flex-start; }
+    .name-en { font-size: 36px; }
+    .tagline { font-size: 18px; }
+    .section { margin-bottom: 48px; }
+    .section-head { flex-wrap: wrap; gap: 8px; }
+    .section-note { margin-left: 0; }
+    .card {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 18px 0;
+    }
+    .card.live:hover { padding-left: 0; padding-right: 0; }
+    .card-arrow { display: none; }
+    .card-body h3 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Hero ============ -->
+<header class="hero">
+  <div class="name-row">
+    <span class="name-en">DrumFeather</span>
+    <span class="name-cn">鼓羽</span>
+  </div>
+  <p class="tagline">
+    Four threads, one workshop. I'm exploring how they cross.
+  </p>
+  <div class="threads">
+    <span class="thread-tag"><span class="thread-dot"></span>Designer</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Sound design beginner</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Drum enthusiast</span>
+    <span class="thread-tag"><span class="thread-dot"></span>AI Craft practitioner</span>
+  </div>
+</header>
+
+<!-- ============ Designer ============ -->
+<section class="section" id="designer">
+  <div class="section-head">
+    <span class="section-label">01 / Designer</span>
+    <span class="section-title">设计师的视角</span>
+    <span class="section-note">first piece in the works</span>
+  </div>
+  <p class="placeholder">
+    Designer 的视角贯穿其他三个分支的作品里。专项产出在路上。
+  </p>
+</section>
+
+<!-- ============ Sound design beginner ============ -->
+<section class="section" id="sound-design">
+  <div class="section-head">
+    <span class="section-label">02 / Sound design beginner</span>
+    <span class="section-title">声音设计 · 学习与实践</span>
+  </div>
+
+  <a class="card live" href="https://chen-house.github.io/timbre-explorer/" target="_blank" rel="noopener">
+    <div class="card-meta">
+      <span class="kind">Notes · Hub</span>
+      <span>2025—ongoing</span>
+      <span class="badge live">Live</span>
+    </div>
+    <div class="card-body">
+      <h3>声音设计学习站</h3>
+      <div class="title-sub">Sound design notes — make sound come alive</div>
+      <p>
+        三个章节：效果器、音色、氛围色。理论根据 + 实操经验 + 可交互的音频演示。每一个主张都标明依据——物理规律、心理声学定律，还是经验法则。
+      </p>
+    </div>
+    <div class="card-arrow">→</div>
+  </a>
+</section>
+
+<!-- ============ Drum enthusiast ============ -->
+<section class="section" id="drum">
+  <div class="section-head">
+    <span class="section-label">03 / Drum enthusiast</span>
+    <span class="section-title">鼓的爱好者</span>
+  </div>
+
+  <a class="card live" href="https://chen-house.github.io/sound-water-system/" target="_blank" rel="noopener">
+    <div class="card-meta">
+      <span class="kind">Story · Interactive</span>
+      <span>2026</span>
+      <span class="badge live">Live</span>
+    </div>
+    <div class="card-body">
+      <h3>Jazz 1899 — 1969</h3>
+      <div class="title-sub">A drum-dial through 100 years of jazz</div>
+      <p>
+        拖动鼓棒切换九段爵士时代，每段一首代表曲 30 秒预览自动播放。每一段的视觉都呼应那段音乐本身。鼓盘做主视觉，因为鼓是这百年里唯一不曾让位的乐器。
+      </p>
+    </div>
+    <div class="card-arrow">→</div>
+  </a>
+</section>
+
+<!-- ============ AI Craft practitioner ============ -->
+<section class="section" id="ai-craft">
+  <div class="section-head">
+    <span class="section-label">04 / AI Craft practitioner</span>
+    <span class="section-title">用 AI 做 craft 的实践</span>
+  </div>
+
+  <div class="card">
+    <div class="card-meta">
+      <span class="kind">Tool · WebApp</span>
+      <span>2026</span>
+      <span class="badge wip">WIP</span>
+    </div>
+    <div class="card-body">
+      <h3>SoundBrush · 声音笔刷</h3>
+      <div class="title-sub">Express what words can't, with sound</div>
+      <p>
+        当语言一时之间表达不出此刻的情绪，用声音替你说出来。A small instrument for moments when language falls short.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ About ============ -->
+<section class="about">
+  <div class="section-head">
+    <span class="section-label">About</span>
+  </div>
+  <p>
+    在四个方向上同时探索：设计、声音设计、玩鼓、用 AI 做长 craft。这个站记录探索过程产出的东西。
+  </p>
+  <p>
+    Four threads at once: design, sound design, drums, AI-built craft. This site is where the work-in-progress lives.
+  </p>
+  <div class="contacts">
+    <a href="mailto:greenlemon.yuan@gmail.com">Email</a>
+    <a href="https://github.com/chen-house" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <span>Made by DrumFeather · 鼓羽 · 2026</span>
+  <span>Built with Claude Code</span>
+</footer>
+
+</body>
+</html>
