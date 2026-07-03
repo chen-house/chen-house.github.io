@@ -1,419 +1,405 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DrumFeather · 鼓羽</title>
-<meta name="description" content="Designer · Sound design beginner · Drum enthusiast · AI Craft practitioner — four threads in one workshop.">
+<title>ChenListen · 晨听 — 从声音的世界寄明信片</title>
+<link rel="icon" href="assets/tingye-icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&family=Long+Cang&display=swap" rel="stylesheet">
 <style>
-  /* —— 视觉变量延续 Jazz 项目(snare_dial_v5.html),identity 一致是 4 个分支共享同一气质的底座 —— */
+  /* ============================================================
+     v6 · ChenListen 晨听 · 声音明信片
+     品牌：ChenListen（晨听）= 作者本人 / 主页 / 每张卡的 FROM 落款。
+           鼓羽 DrumFeather 收窄为「架子鼓绘本」那一个项目的名字。
+     原则：墙上不留空卡。每张 = 真实画面 + 一句真话。
+           还在做的不藏（绘本：真剧照 + 连载中），但绝不出现空信封。
+           真没有一张画面的（声音交互装置·待探索）暂时下墙。
+     ============================================================ */
   :root {
     --cream: #ede5d2;
     --cream-deep: #e3d9bf;
     --cream-card: #f3ecd9;
+    --paper: #f7f1e3;
     --kraft: #cdb88a;
-    --kraft-deep: #b89e6c;
     --ink: #3a342a;
     --ink-soft: rgba(58, 52, 42, 0.66);
     --ink-fade: rgba(58, 52, 42, 0.38);
     --ink-faint: rgba(58, 52, 42, 0.22);
     --label-red: #c1463a;
-
+    --fir: #2c5238;            /* 晨听冷杉绿，logo 主色 */
+    --bronze: #c9a23e;         /* 青铜镲金 */
     --font-serif: 'Noto Serif SC', serif;
     --font-mono: 'JetBrains Mono', monospace;
+    --font-hand: 'Long Cang', cursive;
+    --ease-drop: cubic-bezier(0.2, 0.85, 0.25, 1);
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
     background: var(--cream);
     color: var(--ink);
     font-family: var(--font-serif);
-    font-weight: 400;
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
   }
-
-  body {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 88px 32px 64px;
-  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 80px 48px 64px; }
 
   /* ============ Hero ============ */
-  .hero {
-    margin-bottom: 80px;
+  .hero { margin-bottom: 64px; max-width: 760px; }
+  .logo { height: 56px; width: auto; display: block; margin-bottom: 0; }
+  /* slogan = 这封信的开头第一句，用明信片背面同一支手写笔，放大留白 */
+  .tagline { font-family: var(--font-hand); font-size: 40px; line-height: 1.45; color: var(--ink); margin: 34px 0 4px; letter-spacing: 0.01em; }
+  .tagline-sub { font-size: 15px; color: var(--ink-soft); margin-bottom: 20px; }
+  .threads { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .thread-tag { display: inline-flex; align-items: center; gap: 6px; }
+  .thread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--fir); }
+
+  /* ============ Works head ============ */
+  .works-head { display: flex; align-items: baseline; gap: 16px; padding-top: 36px; border-top: 1px solid var(--ink-faint); margin-bottom: 10px; }
+  .works-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-fade); text-transform: uppercase; }
+  .works-title { font-weight: 500; font-size: 24px; }
+  .works-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade); margin-left: auto; }
+  .works-hint { font-size: 13px; color: var(--ink-fade); margin-bottom: 30px; }
+
+  /* ============ 明信片网格 ============ */
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; margin-bottom: 72px; padding-top: 44px; border-top: 1px solid var(--ink-faint); }
+
+  .postcard { perspective: 1400px; cursor: pointer; }
+  .pc-inner {
+    position: relative; width: 100%;
+    aspect-ratio: 10 / 7;
+    transform-style: preserve-3d;
+    transition: transform 0.55s var(--ease-drop);
   }
-  .name-row {
-    display: flex;
-    align-items: baseline;
-    gap: 18px;
-    margin-bottom: 28px;
+  .postcard.flipped .pc-inner { transform: rotateY(180deg); }
+  .postcard:not(.flipped):hover .pc-inner { transform: translateY(-4px); }
+
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--paper);
+    border: 1px solid var(--ink-faint);
+    box-shadow: 0 2px 10px rgba(58, 52, 42, 0.07);
+    overflow: hidden;
   }
-  .name-en {
-    font-family: var(--font-serif);
-    font-weight: 600;
-    font-size: 44px;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
-  .name-cn {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    font-size: 18px;
-    color: var(--ink-soft);
-    letter-spacing: 0.06em;
-  }
-  .tagline {
-    font-size: 21px;
-    font-weight: 400;
-    line-height: 1.55;
-    color: var(--ink);
-    max-width: 640px;
-    margin-bottom: 18px;
-  }
-  .threads {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--ink-soft);
-    letter-spacing: 0.02em;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-  }
-  .thread-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .thread-dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--label-red);
+  .face.back { transform: rotateY(180deg); }
+  .face::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
   }
 
-  /* ============ Section ============ */
-  .section {
-    margin-bottom: 64px;
-    padding-top: 32px;
-    border-top: 1px solid var(--ink-faint);
-  }
-  .section-head {
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  .section-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.18em;
-    color: var(--ink-fade);
-    text-transform: uppercase;
-  }
-  .section-title {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    font-size: 24px;
-    color: var(--ink);
-  }
-  .section-note {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--ink-fade);
-    letter-spacing: 0.05em;
-    margin-left: auto;
-  }
-
-  /* ============ Card ============ */
-  .card {
-    display: grid;
-    grid-template-columns: 130px 1fr auto;
-    gap: 28px;
-    align-items: start;
-    padding: 22px 0;
-    text-decoration: none;
-    color: inherit;
-    transition: background 0.25s ease, padding-left 0.25s ease, padding-right 0.25s ease;
-    border-top: 1px solid var(--ink-faint);
-  }
-  .card:first-of-type { border-top: none; padding-top: 8px; }
-  .card.live:hover {
+  /* ============ 正面 ============ */
+  .photo-area {
+    position: absolute; inset: 10px; bottom: 52px;
     background: var(--cream-deep);
-    padding-left: 14px;
-    padding-right: 14px;
+    border: 1px solid var(--ink-faint);
+    overflow: hidden;
   }
-  .card.empty { opacity: 0.65; cursor: default; }
+  .live-window { position: absolute; top: 0; left: 0; width: 1200px; height: 840px; border: 0; transform-origin: top left; pointer-events: none; }
+  .photo { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-  .card-meta {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.10em;
-    color: var(--ink-fade);
-    text-transform: uppercase;
-    line-height: 1.6;
-  }
-  .card-meta .kind {
-    display: block;
-    color: var(--ink-soft);
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-  .badge {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 2px 8px;
-    border-radius: 2px;
-    font-size: 10px;
-    font-family: var(--font-mono);
-    letter-spacing: 0.1em;
-  }
-  .badge.live {
-    background: var(--label-red);
-    color: var(--cream);
-  }
-  .badge.wip {
-    background: var(--kraft);
-    color: var(--ink);
-  }
+  .caption { position: absolute; left: 12px; right: 12px; bottom: 10px; display: flex; align-items: baseline; gap: 10px; }
+  .caption h3 { font-weight: 500; font-size: 17px; white-space: nowrap; }
+  .caption .sub { font-family: var(--font-mono); font-size: 10px; color: var(--ink-fade); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .caption .no { font-family: var(--font-mono); font-size: 10px; color: var(--ink-fade); margin-left: auto; }
+  .caption .sub { display: none; }            /* 正面英文小字：减字，让画面说话 */
 
-  .card-body h3 {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    font-size: 22px;
-    line-height: 1.3;
-    margin-bottom: 6px;
-    color: var(--ink);
+  .stamp {
+    position: absolute; top: 18px; right: 18px;
+    width: 54px; height: 66px; background: var(--paper); padding: 5px;
+    box-shadow: 0 1px 4px rgba(58, 52, 42, 0.18);
+    -webkit-mask-image: radial-gradient(circle at 3px 3px, transparent 2.6px, black 2.8px);
+    -webkit-mask-size: 9px 9px; -webkit-mask-position: -1.5px -1.5px;
+    mask-image: radial-gradient(circle at 3px 3px, transparent 2.6px, black 2.8px);
+    mask-size: 9px 9px; mask-position: -1.5px -1.5px;
+    z-index: 3;
   }
-  .card-body .title-sub {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--ink-fade);
-    letter-spacing: 0.04em;
-    margin-bottom: 12px;
+  .stamp-inner {
+    width: 100%; height: 100%; border: 1px solid var(--fir);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    color: var(--fir);
   }
-  .card-body p {
-    font-size: 14.5px;
-    line-height: 1.7;
-    color: var(--ink-soft);
-    max-width: 480px;
-  }
+  .stamp-inner svg { width: 28px; height: 28px; }
+  .stamp-inner .val { font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.08em; }
 
-  .card-arrow {
-    font-family: var(--font-mono);
-    font-size: 18px;
-    color: var(--ink-fade);
-    align-self: center;
-  }
-  .card.empty .card-arrow { opacity: 0; }
+  .postmark { position: absolute; top: 40px; right: 52px; width: 84px; height: 84px; z-index: 4; pointer-events: none; opacity: 0.7; }
 
-  .placeholder {
-    padding: 12px 0;
-    color: var(--ink-fade);
-    font-size: 14px;
-    font-style: italic;
-    line-height: 1.7;
-  }
+  /* ============ 背面 ============ */
+  .back-head { position: absolute; top: 14px; left: 16px; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.22em; color: var(--ink-fade); text-transform: uppercase; }
+  .back-divider { position: absolute; top: 44px; bottom: 18px; left: 55%; width: 1px; background: var(--ink-faint); }
+  .back-msg { position: absolute; top: 46px; left: 18px; right: 47%; font-family: var(--font-hand); font-size: 19px; line-height: 1.55; color: var(--ink-soft); }
+  .back-right { position: absolute; top: 46px; right: 16px; left: 57%; display: flex; flex-direction: column; gap: 8px; }
+  .addr-line { border-bottom: 1px solid var(--ink-faint); padding: 2px 2px 3px; font-family: var(--font-hand); font-size: 16px; color: var(--ink-soft); }
+  .addr-label { font-family: var(--font-mono); font-size: 9px; color: var(--ink-fade); letter-spacing: 0.12em; }
+  .go { margin-top: auto; align-self: flex-start; font-family: var(--font-mono); font-size: 12px; color: var(--label-red); text-decoration: none; border-bottom: 1px solid var(--label-red); padding-bottom: 1px; }
+  .go:hover { opacity: 0.75; }
+  .go.soon { color: var(--ink-fade); border-color: var(--ink-faint); cursor: default; }
+  .back-meta { display: none; }               /* 背面 metadata 标签：减字 */
 
-  /* ============ About ============ */
-  .about {
-    margin-bottom: 60px;
-    padding-top: 32px;
-    border-top: 1px solid var(--ink-faint);
-  }
-  .about p {
-    font-size: 15.5px;
-    line-height: 1.8;
-    color: var(--ink-soft);
-    max-width: 620px;
-    margin-bottom: 16px;
-  }
-  .contacts {
-    font-family: var(--font-mono);
-    font-size: 12.5px;
-    color: var(--ink-soft);
-    display: flex;
-    gap: 22px;
-    flex-wrap: wrap;
-    margin-top: 18px;
-  }
-  .contacts a {
-    color: var(--ink-soft);
-    text-decoration: none;
-    border-bottom: 1px solid var(--ink-faint);
-    padding-bottom: 1px;
-    transition: color 0.2s ease, border-color 0.2s ease;
-  }
-  .contacts a:hover {
-    color: var(--label-red);
-    border-color: var(--label-red);
-  }
+  /* ============ About / footer ============ */
+  .about { padding-top: 36px; border-top: 1px solid var(--ink-faint); margin-bottom: 60px; max-width: 740px; }
+  .about-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-fade); text-transform: uppercase; display: block; margin-bottom: 16px; }
+  .about p { font-size: 15.5px; line-height: 1.8; color: var(--ink-soft); margin-bottom: 16px; }
+  .contacts { font-family: var(--font-mono); font-size: 12.5px; display: flex; gap: 22px; margin-top: 18px; }
+  .contacts a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--ink-faint); padding-bottom: 1px; }
+  .contacts a:hover { color: var(--label-red); border-color: var(--label-red); }
+  footer { border-top: 1px solid var(--ink-faint); padding-top: 22px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade); }
+  footer a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--ink-faint); padding-bottom: 1px; margin-left: 18px; }
+  footer a:first-child { margin-left: 0; }
+  footer a:hover { color: var(--label-red); border-color: var(--label-red); }
 
-  /* ============ Footer ============ */
-  footer {
-    border-top: 1px solid var(--ink-faint);
-    padding-top: 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 12px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--ink-fade);
-    letter-spacing: 0.04em;
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 640px) {
+    .wrap { padding: 56px 22px 48px; }
+    .logo { height: 48px; }
+    .tagline { font-size: 31px; margin-top: 26px; }
+    .grid { grid-template-columns: 1fr; gap: 24px; }
   }
-
-  /* ============ 响应式 ============ */
-  @media (max-width: 680px) {
-    body { padding: 56px 22px 48px; }
-    .hero { margin-bottom: 56px; }
-    .name-row { flex-direction: column; gap: 4px; align-items: flex-start; }
-    .name-en { font-size: 36px; }
-    .tagline { font-size: 18px; }
-    .section { margin-bottom: 48px; }
-    .section-head { flex-wrap: wrap; gap: 8px; }
-    .section-note { margin-left: 0; }
-    .card {
-      grid-template-columns: 1fr;
-      gap: 8px;
-      padding: 18px 0;
-    }
-    .card.live:hover { padding-left: 0; padding-right: 0; }
-    .card-arrow { display: none; }
-    .card-body h3 { font-size: 20px; }
+  @media (prefers-reduced-motion: reduce) {
+    .pc-inner { transition: none; }
+    .postcard:not(.flipped):hover .pc-inner { transform: none; }
   }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- ============ Hero ============ -->
 <header class="hero">
-  <div class="name-row">
-    <span class="name-en">DrumFeather</span>
-    <span class="name-cn">鼓羽</span>
-  </div>
-  <p class="tagline">
-    Four threads, one workshop. I'm exploring how they cross.
-  </p>
-  <div class="threads">
-    <span class="thread-tag"><span class="thread-dot"></span>Designer</span>
-    <span class="thread-tag"><span class="thread-dot"></span>Sound design beginner</span>
-    <span class="thread-tag"><span class="thread-dot"></span>Drum enthusiast</span>
-    <span class="thread-tag"><span class="thread-dot"></span>AI Craft practitioner</span>
-  </div>
+  <img class="logo" src="assets/chenlisten-wordmark.svg" alt="ChenListen 晨听">
+  <p class="tagline">用快节奏增加慢生活的频次。</p>
 </header>
 
-<!-- ============ Designer ============ -->
-<section class="section" id="designer">
-  <div class="section-head">
-    <span class="section-label">01 / Designer</span>
-    <span class="section-title">设计师的视角</span>
-    <span class="section-note">first piece in the works</span>
-  </div>
-  <p class="placeholder">
-    Designer 的视角贯穿其他三个分支的作品里。专项产出在路上。
-  </p>
-</section>
+<div class="grid">
 
-<!-- ============ Sound design beginner ============ -->
-<section class="section" id="sound-design">
-  <div class="section-head">
-    <span class="section-label">02 / Sound design beginner</span>
-    <span class="section-title">声音设计 · 学习与实践</span>
-  </div>
-
-  <a class="card live" href="https://chen-house.github.io/timbre-explorer/" target="_blank" rel="noopener">
-    <div class="card-meta">
-      <span class="kind">Notes · Hub</span>
-      <span>2025—ongoing</span>
-      <span class="badge live">Live</span>
-    </div>
-    <div class="card-body">
-      <h3>声音设计学习站</h3>
-      <div class="title-sub">Sound design notes — make sound come alive</div>
-      <p>
-        三个章节：效果器、音色、氛围色。理论根据 + 实操经验 + 可交互的音频演示。每一个主张都标明依据——物理规律、心理声学定律，还是经验法则。
-      </p>
-    </div>
-    <div class="card-arrow">→</div>
-  </a>
-</section>
-
-<!-- ============ Drum enthusiast ============ -->
-<section class="section" id="drum">
-  <div class="section-head">
-    <span class="section-label">03 / Drum enthusiast</span>
-    <span class="section-title">鼓的爱好者</span>
-  </div>
-
-  <a class="card live" href="https://chen-house.github.io/sound-water-system/" target="_blank" rel="noopener">
-    <div class="card-meta">
-      <span class="kind">Story · Interactive</span>
-      <span>2026</span>
-      <span class="badge live">Live</span>
-    </div>
-    <div class="card-body">
-      <h3>Jazz 1899 — 1969</h3>
-      <div class="title-sub">A drum-dial through 100 years of jazz</div>
-      <p>
-        拖动鼓棒切换九段爵士时代，每段一首代表曲 30 秒预览自动播放。每一段的视觉都呼应那段音乐本身。鼓盘做主视觉，因为鼓是这百年里唯一不曾让位的乐器。
-      </p>
-    </div>
-    <div class="card-arrow">→</div>
-  </a>
-</section>
-
-<!-- ============ AI Craft practitioner ============ -->
-<section class="section" id="ai-craft">
-  <div class="section-head">
-    <span class="section-label">04 / AI Craft practitioner</span>
-    <span class="section-title">用 AI 做 craft 的实践</span>
-  </div>
-
-  <div class="card">
-    <div class="card-meta">
-      <span class="kind">Tool · WebApp</span>
-      <span>2026</span>
-      <span class="badge wip">WIP</span>
-    </div>
-    <div class="card-body">
-      <h3>SoundBrush · 声音笔刷</h3>
-      <div class="title-sub">Express what words can't, with sound</div>
-      <p>
-        当语言一时之间表达不出此刻的情绪，用声音替你说出来。A small instrument for moments when language falls short.
-      </p>
+  <!-- ============ 001 · Jazz（活窗·Live）============ -->
+  <div class="postcard" data-sound="jazz">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area">
+          <iframe class="live-window" src="https://chen-house.github.io/sound-water-system/" loading="lazy" tabindex="-1" title="Jazz 1899—1969 preview"></iframe>
+        </div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="10" stroke="currentColor" stroke-width="1.4"/><line x1="15" y1="15" x2="26" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="15" cy="15" r="1.6" fill="currentColor"/></svg>
+          <span class="val">1899</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm1" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="7" fill="#3a342a" opacity="0.85" letter-spacing="1.5"><textPath href="#pm1">NEW ORLEANS</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2026</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>Jazz 1899 — 1969</h3><span class="sub">a drum-dial through 100 years</span><span class="no">001</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">从 1899 年的新奥尔良出发，拖着鼓棒走了一百年。每个年代留下一首歌，鼓一直没退场。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">屏幕前慢下来的你</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <a class="go" href="https://chen-house.github.io/sound-water-system/" target="_blank" rel="noopener">去听这一百年 →</a>
+        </div>
+        <span class="back-meta">STORY · INTERACTIVE · 2026 · LIVE</span>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- ============ About ============ -->
-<section class="about">
-  <div class="section-head">
-    <span class="section-label">About</span>
+  <!-- ============ 002 · 声音设计学习站（活窗·Live）============ -->
+  <div class="postcard" data-sound="timbre">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area">
+          <iframe class="live-window" src="https://chen-house.github.io/timbre-explorer/" loading="lazy" tabindex="-1" title="声音设计笔记 preview"></iframe>
+        </div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><path d="M4 15 q4 -9 8 0 t8 0 t6 0" stroke="currentColor" stroke-width="1.4"/><path d="M4 21 q4 -4 8 0 t8 0 t6 0" stroke="currentColor" stroke-width="1" opacity="0.6"/></svg>
+          <span class="val">SOUND</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm2" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="7" fill="#3a342a" opacity="0.85" letter-spacing="1.5"><textPath href="#pm2">SOUND NOTES</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2025</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>声音设计学习站</h3><span class="sub">make sound come alive</span><span class="no">002</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">效果器、音色、氛围色——把"声音为什么动人"一条条记下来，每一条都标了依据。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">想听懂声音的你</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <a class="go" href="https://chen-house.github.io/timbre-explorer/" target="_blank" rel="noopener">去翻笔记 →</a>
+        </div>
+        <span class="back-meta">NOTES · HUB · 2025—ONGOING · LIVE</span>
+      </div>
+    </div>
   </div>
-  <p>
-    在四个方向上同时探索：设计、声音设计、玩鼓、用 AI 做长 craft。这个站记录探索过程产出的东西。
-  </p>
-  <p>
-    Four threads at once: design, sound design, drums, AI-built craft. This site is where the work-in-progress lives.
-  </p>
-  <div class="contacts">
+
+  <!-- ============ 003 · 鼓房 / Drum Visualizer（本地活窗）============ -->
+  <div class="postcard" data-sound="drumroom">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area">
+          <iframe class="live-window" src="assets/drum-tunnel.html" loading="lazy" tabindex="-1" title="鼓房 · 时间隧道"></iframe>
+        </div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><ellipse cx="15" cy="13" rx="9" ry="3.4" stroke="currentColor" stroke-width="1.4"/><path d="M6 13 v6 a9 3.4 0 0 0 18 0 v-6" stroke="currentColor" stroke-width="1.4"/></svg>
+          <span class="val">BEAT</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm3" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="7" fill="#3a342a" opacity="0.85" letter-spacing="1.5"><textPath href="#pm3">DRUM ROOM</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2026</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>鼓房 · Drum Visualizer</h3><span class="sub">play it, watch it light up</span><span class="no">003</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">俯视鼓手的视角，每一下都发光迸火。声音全靠浏览器实时合成，没有一个音频文件——敲就响。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">手痒想打两下的你</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <a class="go" href="https://github.com/chen-house/drum-visualizer" target="_blank" rel="noopener">去敲一段 →</a>
+        </div>
+        <span class="back-meta">TOY · WEB AUDIO · 2026 · LIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 004 · SoundBrush（真截图·内测）============ -->
+  <div class="postcard" data-sound="soundbrush">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area"><img class="photo" src="assets/soundbrush.jpg" alt="SoundBrush 声音情绪交互"></div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><path d="M8 22 C8 14 14 6 20 7 C24 8 23 14 17 16 C12 18 9 18 8 22 Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="11" cy="20" r="1.4" fill="currentColor"/></svg>
+          <span class="val">HUE</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm4" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="7" fill="#3a342a" opacity="0.85" letter-spacing="1.5"><textPath href="#pm4">SOUNDBRUSH</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2026</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>SoundBrush · 声音笔刷</h3><span class="sub">paint how you feel, in sound</span><span class="no">004</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">追着光，聆听声音的影子。当语言一时说不出此刻的情绪，用声音替你说——有些事不想说，但你会听见。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">说不出话的那个晚上</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <a class="go" href="https://soundbrush.vercel.app/" target="_blank" rel="noopener">去画一笔 →</a>
+        </div>
+        <span class="back-meta">TOOL · WEBAPP · 2026 · LIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 005 · 氛围音乐 · 大自然里的童谣（真画面）============ -->
+  <div class="postcard" data-sound="ambient">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area"><video class="photo" src="assets/lullaby_loop.mp4" poster="assets/lullaby_poster.jpg" autoplay muted loop playsinline></video></div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><path d="M6 20 Q10 8 15 14 Q20 20 24 10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6 24 Q12 20 18 23 Q22 25 24 22" stroke="currentColor" stroke-width="1" opacity="0.6"/></svg>
+          <span class="val">FIELD</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm5" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="6.4" fill="#3a342a" opacity="0.85" letter-spacing="1.2"><textPath href="#pm5">FIELD RECORDING</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2026</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>大自然里的童谣</h3><span class="sub">ambient, recorded outdoors</span><span class="no">005</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">清晨、溪水、山里的风，还有一只不知名的鸟。大自然给的曲子，我只是录下来，再多说一句。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">需要安静一会儿的你</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <a class="go" href="nature-lullaby.html">去听一会儿 →</a>
+        </div>
+        <span class="back-meta">MUSIC · AMBIENT · 2026 · LIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 006 · 架子鼓绘本 DrumFeather（真剧照 · 连载中）============ -->
+  <div class="postcard" data-sound="storybook">
+    <div class="pc-inner">
+      <div class="face front">
+        <div class="photo-area"><img class="photo" src="assets/storybook.jpg" alt="架子鼓绘本 DrumFeather · Ch5 草地舞台"></div>
+        <div class="stamp"><div class="stamp-inner">
+          <svg viewBox="0 0 30 30" fill="none"><line x1="9" y1="24" x2="18" y2="14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 14 Q20 8 27 6 Q24 13 19 15 Q17 15 18 14 Z" fill="currentColor"/></svg>
+          <span class="val">CH.5</span>
+        </div></div>
+        <svg class="postmark" viewBox="0 0 100 100" fill="none">
+          <circle cx="42" cy="50" r="26" stroke="#3a342a" stroke-width="1.2" opacity="0.85"/><circle cx="42" cy="50" r="19" stroke="#3a342a" stroke-width="0.8" opacity="0.6"/>
+          <path id="pm6" d="M 42 27 a 23 23 0 0 1 0 46" fill="none"/>
+          <text font-family="JetBrains Mono, monospace" font-size="6.6" fill="#3a342a" opacity="0.85" letter-spacing="1.2"><textPath href="#pm6">DRUMFEATHER</textPath></text>
+          <text x="42" y="53" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7.5" fill="#3a342a" opacity="0.9">2026</text>
+          <g stroke="#3a342a" stroke-width="1.1" opacity="0.7"><path d="M66 42 q8 -3 16 0"/><path d="M66 50 q8 -3 16 0"/><path d="M66 58 q8 -3 16 0"/></g>
+        </svg>
+        <div class="caption"><h3>架子鼓绘本 · 鼓羽</h3><span class="sub">a drum storybook, in chapters</span><span class="no">006</span></div>
+      </div>
+      <div class="face back">
+        <span class="back-head">Post Card · 明信片</span>
+        <div class="back-divider"></div>
+        <p class="back-msg">一本会动的书：草地上的鼓醒了，一个个变成人，出走，在月夜的芦苇荡里合奏。已经写到第五章。</p>
+        <div class="back-right">
+          <span class="addr-label">TO</span><span class="addr-line">还相信童话的你</span>
+          <span class="addr-label">FROM</span><span class="addr-line">晨听 · ChenListen</span>
+          <span class="go soon">连载至第五章</span>
+        </div>
+        <span class="back-meta">FILM · STORYBOOK · 连载中</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span>ChenListen · 2026</span>
+  <span class="foot-links">
     <a href="mailto:greenlemon.yuan@gmail.com">Email</a>
     <a href="https://github.com/chen-house" target="_blank" rel="noopener">GitHub</a>
-  </div>
-</section>
-
-<!-- ============ Footer ============ -->
-<footer>
-  <span>Made by DrumFeather · 鼓羽 · 2026</span>
-  <span>Built with Claude Code</span>
+    <a href="https://x.com/Bird_Cheetah" target="_blank" rel="noopener">X</a>
+    <a href="https://xhslink.com/m/AogD98Mn59v" target="_blank" rel="noopener">小红书</a>
+  </span>
 </footer>
 
+</div>
+<script>
+  document.querySelectorAll('.postcard').forEach(function (pc) {
+    pc.addEventListener('click', function (e) {
+      if (e.target.closest('a')) return;
+      pc.classList.toggle('flipped');
+    });
+  });
+  function fitWindows() {
+    document.querySelectorAll('.photo-area').forEach(function (area) {
+      var f = area.querySelector('.live-window');
+      if (!f) return;
+      f.style.transform = 'scale(' + (area.clientWidth / 1200) + ')';
+    });
+  }
+  window.addEventListener('load', fitWindows);
+  window.addEventListener('resize', fitWindows);
+  fitWindows();
+</script>
 </body>
 </html>

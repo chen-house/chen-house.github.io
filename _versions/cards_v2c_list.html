@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DrumFeather · 卡片方案 C · 行式 + 小封面（最克制）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* 方案 C · 行式 + 小封面：保留现在的四分支章节结构，行里加一枚小唱片套缩略，改动最小、文字最大 */
+  :root {
+    --cream: #ede5d2;
+    --cream-deep: #e3d9bf;
+    --cream-card: #f3ecd9;
+    --kraft: #cdb88a;
+    --kraft-deep: #b89e6c;
+    --ink: #3a342a;
+    --ink-soft: rgba(58, 52, 42, 0.66);
+    --ink-fade: rgba(58, 52, 42, 0.38);
+    --ink-faint: rgba(58, 52, 42, 0.22);
+    --label-red: #c1463a;
+    --font-serif: 'Noto Serif SC', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  body { max-width: 880px; margin: 0 auto; padding: 88px 32px 64px; }
+
+  .hero { margin-bottom: 80px; }
+  .name-row { display: flex; align-items: baseline; gap: 18px; margin-bottom: 28px; }
+  .name-en { font-weight: 600; font-size: 44px; letter-spacing: -0.01em; }
+  .name-cn { font-size: 18px; color: var(--ink-soft); letter-spacing: 0.06em; }
+  .tagline { font-size: 21px; line-height: 1.55; max-width: 640px; margin-bottom: 18px; }
+  .threads { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .thread-tag { display: inline-flex; align-items: center; gap: 6px; }
+  .thread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--label-red); }
+
+  .section { margin-bottom: 64px; padding-top: 32px; border-top: 1px solid var(--ink-faint); }
+  .section-head { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; }
+  .section-label { font-family: var(--font-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.18em; color: var(--ink-fade); text-transform: uppercase; }
+  .section-title { font-weight: 500; font-size: 24px; }
+  .section-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade); margin-left: auto; }
+
+  .card {
+    display: grid;
+    grid-template-columns: 116px 130px 1fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 20px 0;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.25s ease, padding-left 0.25s ease, padding-right 0.25s ease;
+  }
+  a.card:hover { background: var(--cream-deep); padding-left: 14px; padding-right: 14px; }
+  .card.wip { opacity: 0.72; }
+
+  .thumb {
+    width: 116px; height: 116px;
+    background: var(--kraft);
+    border: 1px solid var(--ink-faint);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .thumb svg { width: 76%; height: 76%; }
+
+  .card-meta {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+    color: var(--ink-fade); text-transform: uppercase; line-height: 1.6;
+  }
+  .card-meta .kind { display: block; color: var(--ink-soft); font-weight: 500; margin-bottom: 4px; }
+  .badge { display: inline-block; margin-top: 12px; padding: 2px 8px; border-radius: 2px; font-size: 10px; font-family: var(--font-mono); letter-spacing: 0.1em; }
+  .badge.live { background: var(--label-red); color: var(--cream); }
+  .badge.wip-b { background: var(--kraft); color: var(--ink); }
+
+  .card-body h3 { font-weight: 500; font-size: 22px; line-height: 1.3; margin-bottom: 6px; }
+  .card-body .title-sub { font-family: var(--font-mono); font-size: 12px; color: var(--ink-fade); margin-bottom: 12px; }
+  .card-body p { font-size: 14.5px; line-height: 1.7; color: var(--ink-soft); max-width: 430px; }
+
+  .card-arrow { font-family: var(--font-mono); font-size: 18px; color: var(--ink-fade); }
+
+  .placeholder { padding: 12px 0; color: var(--ink-fade); font-size: 14px; font-style: italic; }
+
+  .about { margin-bottom: 60px; padding-top: 32px; border-top: 1px solid var(--ink-faint); }
+  .about p { font-size: 15.5px; line-height: 1.8; color: var(--ink-soft); max-width: 620px; margin-bottom: 16px; }
+  .contacts { font-family: var(--font-mono); font-size: 12.5px; display: flex; gap: 22px; margin-top: 18px; }
+  .contacts a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--ink-faint); padding-bottom: 1px; }
+  .contacts a:hover { color: var(--label-red); border-color: var(--label-red); }
+
+  footer {
+    border-top: 1px solid var(--ink-faint); padding-top: 22px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade);
+  }
+
+  @media (max-width: 680px) {
+    body { padding: 56px 22px 48px; }
+    .name-row { flex-direction: column; gap: 4px; }
+    .name-en { font-size: 36px; }
+    .tagline { font-size: 18px; }
+    .card { grid-template-columns: 86px 1fr; gap: 14px; align-items: start; }
+    .thumb { width: 86px; height: 86px; }
+    .card-meta { grid-column: 2; }
+    .card-body { grid-column: 1 / -1; }
+    .card-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="name-row">
+    <span class="name-en">DrumFeather</span>
+    <span class="name-cn">鼓羽</span>
+  </div>
+  <p class="tagline">Four threads, one workshop. I'm exploring how they cross.</p>
+  <div class="threads">
+    <span class="thread-tag"><span class="thread-dot"></span>Designer</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Sound design beginner</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Drum enthusiast</span>
+    <span class="thread-tag"><span class="thread-dot"></span>AI Craft practitioner</span>
+  </div>
+</header>
+
+<section class="section" id="designer">
+  <div class="section-head">
+    <span class="section-label">01 / Designer</span>
+    <span class="section-title">设计师的视角</span>
+    <span class="section-note">first piece in the works</span>
+  </div>
+  <p class="placeholder">Designer 的视角贯穿其他三个分支的作品里。专项产出在路上。</p>
+</section>
+
+<section class="section" id="sound-design">
+  <div class="section-head">
+    <span class="section-label">02 / Sound design beginner</span>
+    <span class="section-title">声音设计 · 学习与实践</span>
+  </div>
+  <a class="card" href="https://chen-house.github.io/timbre-explorer/" target="_blank" rel="noopener">
+    <div class="thumb">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <path d="M24 76 q12 -32 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="#3a342a" stroke-width="2.4"/>
+        <path d="M24 112 q12 -16 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="rgba(58,52,42,0.5)" stroke-width="1.8"/>
+        <path d="M24 142 q12 -8 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="rgba(58,52,42,0.3)" stroke-width="1.5" stroke-dasharray="4 5"/>
+        <circle cx="100" cy="76" r="4.5" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-meta">
+      <span class="kind">Notes · Hub</span>
+      <span>2025—ongoing</span>
+      <span class="badge live">Live</span>
+    </div>
+    <div class="card-body">
+      <h3>声音设计学习站</h3>
+      <div class="title-sub">Sound design notes — make sound come alive</div>
+      <p>三个章节：效果器、音色、氛围色。理论根据 + 实操经验 + 可交互的音频演示。</p>
+    </div>
+    <div class="card-arrow">→</div>
+  </a>
+</section>
+
+<section class="section" id="drum">
+  <div class="section-head">
+    <span class="section-label">03 / Drum enthusiast</span>
+    <span class="section-title">鼓的爱好者</span>
+  </div>
+  <a class="card" href="https://chen-house.github.io/sound-water-system/" target="_blank" rel="noopener">
+    <div class="thumb">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <circle cx="100" cy="100" r="64" stroke="#3a342a" stroke-width="2.2"/>
+        <circle cx="100" cy="100" r="52" stroke="rgba(58,52,42,0.35)" stroke-width="1.2"/>
+        <g stroke="#3a342a" stroke-width="1.8">
+          <line x1="100" y1="30" x2="100" y2="42"/>
+          <line x1="170" y1="100" x2="158" y2="100"/>
+          <line x1="100" y1="170" x2="100" y2="158"/>
+          <line x1="30" y1="100" x2="42" y2="100"/>
+        </g>
+        <line x1="100" y1="100" x2="178" y2="46" stroke="#3a342a" stroke-width="3.2" stroke-linecap="round"/>
+        <circle cx="178" cy="46" r="5.5" fill="#3a342a"/>
+        <circle cx="100" cy="100" r="5" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-meta">
+      <span class="kind">Story · Interactive</span>
+      <span>2026</span>
+      <span class="badge live">Live</span>
+    </div>
+    <div class="card-body">
+      <h3>Jazz 1899 — 1969</h3>
+      <div class="title-sub">A drum-dial through 100 years of jazz</div>
+      <p>拖动鼓棒切换九段爵士时代，每段一首代表曲 30 秒预览自动播放。</p>
+    </div>
+    <div class="card-arrow">→</div>
+  </a>
+</section>
+
+<section class="section" id="ai-craft">
+  <div class="section-head">
+    <span class="section-label">04 / AI Craft practitioner</span>
+    <span class="section-title">用 AI 做 craft 的实践</span>
+  </div>
+  <div class="card wip">
+    <div class="thumb">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <path d="M30 148 C 62 108, 86 100, 112 104" stroke="#3a342a" stroke-width="9" stroke-linecap="round"/>
+        <path d="M112 104 q9 -20 18 0 t18 0 t18 0" stroke="#3a342a" stroke-width="2.2"/>
+        <line x1="30" y1="148" x2="16" y2="162" stroke="#3a342a" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="166" cy="104" r="4.5" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-meta">
+      <span class="kind">Tool · WebApp</span>
+      <span>2026</span>
+      <span class="badge wip-b">WIP</span>
+    </div>
+    <div class="card-body">
+      <h3>SoundBrush · 声音笔刷</h3>
+      <div class="title-sub">Express what words can't, with sound</div>
+      <p>当语言一时之间表达不出此刻的情绪，用声音替你说出来。</p>
+    </div>
+  </div>
+</section>
+
+<section class="about">
+  <div class="section-head">
+    <span class="section-label">About</span>
+  </div>
+  <p>在四个方向上同时探索：设计、声音设计、玩鼓、用 AI 做长 craft。这个站记录探索过程产出的东西。</p>
+  <p>Four threads at once: design, sound design, drums, AI-built craft. This site is where the work-in-progress lives.</p>
+  <div class="contacts">
+    <a href="mailto:greenlemon.yuan@gmail.com">Email</a>
+    <a href="https://github.com/chen-house" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <span>Made by DrumFeather · 鼓羽 · 2026</span>
+  <span>Built with Claude Code</span>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChenListen · Drum Garden</title>
+<style>
+  html, body { margin:0; padding:0; background:#1d3b35; height:100%; overflow:hidden;
+    font-family:-apple-system,"SF Pro Display","PingFang SC",Helvetica,Arial,sans-serif; }
+  #wrap { position:fixed; inset:0; }
+  canvas { display:block; width:100%; height:100%; }
+  /* 控制台：亚麻布面 */
+  #ui { position:fixed; top:14px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:12px; z-index:10; user-select:none;
+    padding:8px 14px; border-radius:18px;
+    background:linear-gradient(180deg, rgba(30,56,50,.88), rgba(20,42,37,.8));
+    border:1.5px solid rgba(214,188,122,.35);
+    box-shadow:0 8px 30px rgba(8,20,16,.5), inset 0 1px 0 rgba(230,210,150,.12);
+    backdrop-filter:blur(10px); }
+  button { background:rgba(214,188,122,.08); color:#e3d6ae; border:1.5px solid rgba(214,188,122,.4);
+    border-radius:14px; padding:8px 16px; font-size:13px; letter-spacing:1px; cursor:pointer;
+    transition:all .18s; }
+  /* 漂流瓶：把外面的曲子装进花园 */
+  #midiBtn { background:transparent; border:none; padding:2px 5px;
+    display:flex; align-items:center; gap:7px;
+    color:#9fc3b2; font-size:11.5px; letter-spacing:1.5px;
+    filter:drop-shadow(0 2px 4px rgba(8,20,16,.6));
+    transition:all .2s; transform-origin:60% 70%; }
+  #midiBtn:hover { color:#ecd9a8; }
+  #midiBtn:hover { background:transparent; box-shadow:none;
+    transform:rotate(-16deg) translateY(-1px);
+    filter:drop-shadow(0 0 10px rgba(224,196,120,.55)); }
+  button:hover { background:rgba(214,188,122,.18); box-shadow:0 2px 14px rgba(214,188,122,.3);
+    transform:translateY(-1px); }
+  /* 播放键 = 一朵花 */
+  #playBtn { width:54px; height:54px; padding:0; border:none; border-radius:50%;
+    background:transparent url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><g transform='translate(30,30)'><g fill='%238b7fd0'><ellipse rx='9' ry='15' transform='rotate(0) translate(0,-13)'/><ellipse rx='9' ry='15' transform='rotate(72) translate(0,-13)'/><ellipse rx='9' ry='15' transform='rotate(144) translate(0,-13)'/><ellipse rx='9' ry='15' transform='rotate(216) translate(0,-13)'/><ellipse rx='9' ry='15' transform='rotate(288) translate(0,-13)'/></g><g fill='%23a99ce0' opacity='.85'><ellipse rx='6' ry='10' transform='rotate(36) translate(0,-9)'/><ellipse rx='6' ry='10' transform='rotate(108) translate(0,-9)'/><ellipse rx='6' ry='10' transform='rotate(180) translate(0,-9)'/><ellipse rx='6' ry='10' transform='rotate(252) translate(0,-9)'/><ellipse rx='6' ry='10' transform='rotate(324) translate(0,-9)'/></g><circle r='10' fill='%23ddb24a'/><circle r='10' fill='none' stroke='%23a8801f' stroke-width='1.5'/></g></svg>") center/contain no-repeat;
+    color:#6b4a12; font-weight:800; font-size:15px; line-height:54px;
+    filter:drop-shadow(0 3px 6px rgba(90,60,20,.3)); letter-spacing:0; }
+  #playBtn:hover { transform:scale(1.08) rotate(8deg); box-shadow:none; background-color:transparent; }
+  #bpmBox { color:#c9bd96; font-size:12.5px; display:flex; align-items:center; gap:8px;
+    padding:0 12px; border-left:1.5px dashed rgba(214,188,122,.3);
+    border-right:1.5px dashed rgba(214,188,122,.3); }
+  /* BPM 滑杆 = 树枝，滑块 = 叶子 */
+  input[type=range] { -webkit-appearance:none; appearance:none; width:110px; height:20px;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 110 20'><path d='M2 11 Q 20 8 38 10.5 T 74 10 T 108 10.5' fill='none' stroke='%236e4e30' stroke-width='3.4' stroke-linecap='round'/><path d='M22 10 q 3 -6 8 -7' fill='none' stroke='%236e4e30' stroke-width='2'/><ellipse cx='31' cy='2.8' rx='4' ry='2.2' fill='%233f6b52' transform='rotate(-22 31 2.8)'/><path d='M62 10.5 q 4 5 9 5.6' fill='none' stroke='%236e4e30' stroke-width='2'/><ellipse cx='72' cy='16.4' rx='4' ry='2.2' fill='%233f6b52' transform='rotate(18 72 16.4)'/></svg>") center/contain no-repeat; outline:none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px;
+    background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M10 1 C 16 4 18 11 10 19 C 2 11 4 4 10 1 Z' fill='%23467a5b' stroke='%232c4a3e' stroke-width='1.2'/><path d='M10 4 L 10 16' stroke='%238fb49e' stroke-width='1.1'/></svg>") center/contain no-repeat;
+    cursor:grab; }
+  input[type=range]::-moz-range-thumb { width:20px; height:20px; border:none; background:transparent;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M10 1 C 16 4 18 11 10 19 C 2 11 4 4 10 1 Z' fill='%23467a5b' stroke='%232c4a3e' stroke-width='1.2'/></svg>"); background-size:contain; cursor:grab; }
+  input[type=range]::-moz-range-track { background:transparent; }
+  /* 曲库 = 纸灯笼：曲名写在灯笼上 */
+  select { background-color:rgba(224,196,120,.10); color:#ecd9a8;
+    border:1px solid rgba(224,196,120,.45);
+    border-radius:999px; padding:8px 26px 8px 32px; font-size:12.5px; cursor:pointer;
+    outline:none; max-width:230px; transition:all .18s;
+    text-shadow:0 0 7px rgba(224,196,120,.45);
+    box-shadow:0 0 16px rgba(224,196,120,.22), inset 0 0 12px rgba(224,196,120,.08);
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='17'><rect x='5.5' y='0.6' width='3' height='2' rx='.6' fill='%23a8854f'/><ellipse cx='7' cy='8.6' rx='5.6' ry='6.2' fill='%23e8c87a' opacity='.92'/><path d='M4.6 4 C3.6 6.4 3.6 11 4.6 13.4 M9.4 4 C10.4 6.4 10.4 11 9.4 13.4 M7 2.6 V14.8' stroke='%23bd955297' stroke-width='.8' fill='none' opacity='.7'/><rect x='5.5' y='14.6' width='3' height='1.7' rx='.6' fill='%23a8854f'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23d9c285' stroke-width='1.5' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat, no-repeat;
+    background-position:left 10px center, right 11px center; }
+  select:hover { background-color:rgba(224,196,120,.20);
+    box-shadow:0 0 24px rgba(224,196,120,.4), inset 0 0 14px rgba(224,196,120,.14); }
+  select option { background:#16302c; color:#e3dcc0; }
+  /* 花园挂牌 */
+  #brand { position:fixed; top:16px; left:26px; z-index:10; pointer-events:none;
+    font-family:"Brush Script MT","Snell Roundhand",Georgia,cursive; font-style:italic; font-weight:700;
+    font-size:25px; letter-spacing:2px; color:#dcc784;
+    text-shadow:0 1px 0 rgba(0,0,0,.35), 0 2px 12px rgba(214,188,122,.4); }
+  #brand small { display:block; font-style:normal; font-family:-apple-system,Helvetica; font-weight:600;
+    font-size:8.5px; letter-spacing:5px; color:#9aab8e; margin-top:0; text-shadow:none; }
+  /* 图例 = 标本卡片 */
+  #legend { position:fixed; left:18px; top:50%; transform:translateY(-44%); z-index:10;
+    background:rgba(20,40,36,.84); border:1.5px solid rgba(214,188,122,.3);
+    border-radius:12px; padding:10px 14px 10px 11px; backdrop-filter:blur(8px);
+    box-shadow:0 6px 20px rgba(8,20,16,.45);
+    user-select:none; }
+  #legend h4 { margin:0 0 7px 2px; font-size:10px; font-weight:700; letter-spacing:3px;
+    color:#b9ad84; }
+  .lg-row { display:flex; align-items:center; gap:8px; padding:2.5px 0; }
+  .lg-row kbd { display:inline-flex; align-items:center; justify-content:center;
+    min-width:17px; height:17px; padding:0 3px; border-radius:4px; font-size:10.5px;
+    font-family:inherit; font-weight:700; color:#e3d6ae;
+    background:rgba(214,188,122,.12); border:1px solid rgba(214,188,122,.4);
+    border-bottom-width:2px; }
+  .lg-row svg { flex:none; }
+  .lg-row span { font-size:11px; color:#a9bba0; letter-spacing:.5px; }
+  @media (max-width:760px){ #legend{ display:none; } }
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="cv"></canvas></div>
+<div id="brand"><svg width="200" viewBox="0 0 510 112" xmlns="http://www.w3.org/2000/svg" style="display:block">
+  <defs>
+    <linearGradient id="brassLogo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e2c171"/>
+      <stop offset=".45" stop-color="#b8923f"/>
+      <stop offset=".75" stop-color="#d4ad55"/>
+      <stop offset="1" stop-color="#9a7830"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(12,12) scale(.74)">
+    <g stroke="url(#brassLogo)" fill="none" stroke-linecap="round">
+      <path d="M91.13 81.80 A 38 38 0 1 1 91.13 38.20" stroke-width="7"/>
+      <path d="M95.94 80.75 A 41.5 41.5 0 1 1 95.94 39.25" stroke-width="1.1" opacity=".5"/>
+      <path d="M89.88 77.25 A 34.5 34.5 0 1 1 89.88 42.75" stroke-width="1.1" opacity=".42"/>
+      <path d="M82.12 75.49 A 27 27 0 1 1 82.12 44.51" stroke-width="6" opacity=".9"/>
+      <path d="M73.11 69.18 A 16 16 0 1 1 73.11 50.82" stroke-width="5.2" opacity=".75"/>
+    </g>
+    <circle cx="66.6" cy="97.4" r="1.2" fill="#6f5520" opacity=".6"/>
+    <circle cx="27.1" cy="79.0" r="1.3" fill="#f4e3ae" opacity=".6"/>
+    <circle cx="27.1" cy="41.0" r="1.1" fill="#6f5520" opacity=".55"/>
+    <circle cx="69.8" cy="23.3" r="1.2" fill="#f4e3ae" opacity=".55"/>
+    <circle cx="33.4" cy="55.3" r="1.2" fill="#6f5520" opacity=".55"/>
+    <circle cx="98" cy="60" r="6" fill="#ecdfb6"/>
+  </g>
+  <text x="104" y="86" font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+    font-weight="700" font-size="58" fill="#ecdfb6" letter-spacing="1">henListen</text>
+</svg></div>
+<div id="ui">
+  <select id="grooveSel"></select>
+  <button id="playBtn" title="播放 / 暂停">▶</button>
+  <span id="bpmBox">BPM <input id="bpm" type="range" min="60" max="180" value="100"><b id="bpmVal" style="color:#dcc784">100</b></span>
+  <button id="midiBtn" title="浇一壶水：导入电子鼓导出的 .mid，给花园补充水分">
+    <svg width="30" height="26" viewBox="0 0 36 30" xmlns="http://www.w3.org/2000/svg">
+      <!-- 壶身 -->
+      <path d="M13 12 h13 a2.2 2.2 0 0 1 2.2 2.2 v8.3 a3.2 3.2 0 0 1 -3.2 3.2 h-11 a3.2 3.2 0 0 1 -3.2 -3.2 v-8.3 a2.2 2.2 0 0 1 2.2 -2.2 z"
+        fill="rgba(150,200,180,.16)" stroke="#9fc3b2" stroke-width="1.4"/>
+      <!-- 壶口 -->
+      <ellipse cx="19.5" cy="12" rx="6.6" ry="1.5" fill="none" stroke="#9fc3b2" stroke-width="1.2"/>
+      <!-- 提手 -->
+      <path d="M15.5 11.5 C 15.5 6.2 23.5 6.2 23.5 11.5" fill="none" stroke="#9fc3b2" stroke-width="1.4" stroke-linecap="round"/>
+      <!-- 壶嘴 -->
+      <path d="M13 16.5 L6 10" stroke="#9fc3b2" stroke-width="2.4" stroke-linecap="round"/>
+      <ellipse cx="5.2" cy="9.2" rx="2.7" ry="1.8" transform="rotate(-45 5.2 9.2)"
+        fill="rgba(150,200,180,.25)" stroke="#9fc3b2" stroke-width="1.1"/>
+      <!-- 洒出的水珠 -->
+      <circle cx="2.2" cy="4.6" r="1.15" fill="rgba(224,196,120,.85)"/>
+      <circle cx="5.4" cy="3.2" r="1" fill="rgba(224,196,120,.7)"/>
+      <circle cx="8.4" cy="2.6" r=".85" fill="rgba(224,196,120,.55)"/>
+      <circle cx="1.6" cy="7.6" r=".8" fill="rgba(224,196,120,.5)"/>
+    </svg>导入 MIDI</button>
+  <input type="file" id="midiFile" accept=".mid,.midi" style="display:none">
+</div>
+<div id="legend"><h4>键盘演奏</h4></div>
+
+<script>
+"use strict";
+/* ---------------- 鼓件定义 ---------------- */
+const LANES = [
+  { id:'crashL', label:'CRASH L', color:'#8b7fd0' },  /* 紫鸢尾 */
+  { id:'hihat',  label:'HI-HAT',  color:'#6e9484' },  /* 池水青 */
+  { id:'snare',  label:'SNARE',   color:'#5d8a66' },  /* 水草绿 */
+  { id:'kick',   label:'KICK',    color:'#2e5040' },  /* 深潭绿 */
+  { id:'tom1',   label:'TOM 1',   color:'#4f7d57' },
+  { id:'tom2',   label:'TOM 2',   color:'#446e4e' },
+  { id:'ftom',   label:'F.TOM',   color:'#3a5f45' },
+  { id:'ride',   label:'RIDE',    color:'#c2a045' },  /* 水面金光 */
+  { id:'crashR', label:'CRASH R', color:'#5e5fae' },  /* 深鸢尾蓝 */
+  { id:'cowbell',label:'COWBELL', color:'#b07289' },  /* 睡莲粉 */
+];
+const LANE_IDX = Object.fromEntries(LANES.map((l,i)=>[l.id,i]));
+const COLOR = id => LANES[LANE_IDX[id]].color;
+
+/* ---------------- 曲库 ----------------
+   说明：以下为「风格还原」谱型（按公开流传的常见谱面写法），非逐音扒带 */
+let P = [], LOOP_BEATS = 16, lastHit = [];
+function setPattern(notes, loop){
+  P = notes; LOOP_BEATS = loop;
+  lastHit = new Array(P.length).fill(-99);
+  hitSet.clear();
+}
+function mk(fn){
+  const a=[];
+  const n=(b,lane,vel=1,open=false)=>a.push({b,lane,vel,open});
+  fn(n); a.sort((x,y)=>x.b-y.b); return a;
+}
+const T3 = 1/3; /* 三连音单位 */
+const GROOVES = [
+{ name:'综合示范 · Groove+Fill', bpm:100, loop:16, notes:mk(n=>{
+  n(0,'crashL',.95); n(0,'kick');
+  n(2,'kick',.95); n(2.75,'kick',.8);
+  n(1,'snare'); n(3,'snare'); n(3.75,'snare',.3);
+  [0.5,1,1.5,2,2.5,3,3.5].forEach(b=>n(b,'hihat', b%1===0?.75:.5));
+  n(4,'kick'); n(6,'kick',.95); n(6.75,'kick',.8);
+  n(5,'snare'); n(7,'snare'); n(5.75,'snare',.3);
+  [4,4.5,5,5.5,6,6.5,7].forEach(b=>n(b,'hihat', b%1===0?.75:.5));
+  n(7.5,'hihat',.85,true);
+  n(8,'crashR',.9);
+  [8,8.5,9,9.5,10,10.5,11,11.5].forEach(b=>n(b,'ride', b%1===0?.85:.55));
+  [8,9,10,11].forEach(b=>n(b,'cowbell',.8));
+  n(8,'kick'); n(9.5,'kick',.85); n(10.5,'kick',.9);
+  n(9,'snare'); n(11,'snare');
+  [12,12.5,13,13.5].forEach(b=>n(b,'hihat', b%1===0?.75:.5));
+  n(12,'kick'); n(13.5,'kick',.8); n(13,'snare');
+  n(14,'snare',.85); n(14.25,'snare',.6); n(14.5,'snare',.9);
+  n(14.75,'tom1',.9); n(15,'tom1',.75);
+  n(15.25,'tom2',.95); n(15.5,'tom2',.8);
+  n(15.75,'ftom');
+})},
+{ name:'Money Beat · 流行八分基础', bpm:96, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let i=0;i<8;i++) n(B+i*.5,'hihat', i%2?.5:.75);
+    n(B,'kick'); n(B+2,'kick',.95);
+    n(B+1,'snare'); n(B+3,'snare');
+  }
+  n(6.5,'kick',.8);
+})},
+{ name:'Billie Jean 式 · 节拍器纪律', bpm:117, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let i=0;i<8;i++) n(B+i*.5,'hihat', i%2?.5:.7);
+    n(B,'kick'); n(B+2,'kick');
+    n(B+1,'snare',.95); n(B+3,'snare',.95);
+  }
+})},
+{ name:'We Will Rock You 式 · 跺脚拍手', bpm:81, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    n(B,'kick'); n(B+.5,'kick',.9); n(B+1,'snare');
+    n(B+2,'kick'); n(B+2.5,'kick',.9); n(B+3,'snare');
+  }
+})},
+{ name:'Funky Drummer 式 · Ghost 必修', bpm:101, loop:4, notes:mk(n=>{
+  for(let i=0;i<16;i++){
+    const b=i*.25;
+    if(b===3.5){ n(b,'hihat',.8,true); continue; }
+    n(b,'hihat', b%1===0?.7:.45);
+  }
+  n(0,'kick'); n(.75,'kick',.85); n(2,'kick',.95); n(2.5,'kick',.8);
+  n(1,'snare'); n(3,'snare');
+  [1.25,1.75,2.25,3.75].forEach(b=>n(b,'snare',.25));
+})},
+{ name:'Cold Sweat 式 · JB Funk', bpm:110, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let i=0;i<8;i++) n(B+i*.5,'hihat', i%2?.5:.65);
+    n(B,'kick'); n(B+2.5,'kick',.9);
+    n(B+1,'snare'); n(B+3.5,'snare',.95);
+  }
+  n(7.25,'snare',.25);
+})},
+{ name:'Rosanna 式 · 半拍 Shuffle', bpm:85, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let j=0;j<4;j++){
+      n(B+j,'hihat', j===0?.7:.6);
+      n(B+j+2*T3,'hihat',.4);
+      if(j!==2) n(B+j+T3,'snare',.22);
+    }
+    n(B+2,'snare');           /* 半拍 backbeat */
+    n(B,'kick');
+  }
+  n(6+2*T3,'kick',.7);
+})},
+{ name:'布鲁斯 Shuffle', bpm:126, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let j=0;j<4;j++){ n(B+j,'ride',.7); n(B+j+2*T3,'ride',.45); }
+    n(B,'kick',.9); n(B+2,'kick',.9);
+    n(B+1,'snare'); n(B+3,'snare');
+  }
+})},
+{ name:'Amen Break 式 · 经典碎拍', bpm:136, loop:16, notes:mk(n=>{
+  for(let i=0;i<32;i++) n(i*.5,'ride', i%2?.5:.7);
+  for(const B of [0,4]){
+    n(B,'kick'); n(B+.5,'kick',.9); n(B+2.5,'kick',.9);
+    n(B+1,'snare'); n(B+1.75,'snare',.3);
+    n(B+3,'snare'); n(B+3.5,'snare',.3);
+  }
+  n(8,'kick'); n(8.5,'kick',.9);
+  n(9,'snare'); n(9.75,'snare',.3);
+  n(10.5,'kick',.9); n(11.5,'snare');      /* 军鼓移位 */
+  n(12.5,'kick',.9); n(13.5,'snare');
+  n(14,'kick'); n(14.5,'crashR',.9); n(15.5,'snare');
+})},
+{ name:'Bossa Nova', bpm:132, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    for(let i=0;i<8;i++) n(B+i*.5,'hihat', i%2?.35:.5);
+    n(B,'kick',.9); n(B+1.5,'kick',.8); n(B+2,'kick',.9); n(B+3.5,'kick',.8);
+  }
+  /* 边击 clave（用军鼓轻击表示）*/
+  [0,1.5,3,4.5,6].forEach(b=>n(b,'snare',.5));
+})},
+{ name:'爵士 Swing · Spang-a-lang', bpm:140, loop:8, notes:mk(n=>{
+  for(const B of [0,4]){
+    n(B,'ride',.8); n(B+1,'ride',.65); n(B+1+2*T3,'ride',.45);
+    n(B+2,'ride',.8); n(B+3,'ride',.65); n(B+3+2*T3,'ride',.45);
+    n(B+1,'hihat',.55); n(B+3,'hihat',.55);   /* 踩镲脚 */
+    n(B,'kick',.2); n(B+2,'kick',.2);          /* feather */
+  }
+  n(5+T3,'snare',.3); n(7+2*T3,'snare',.35);   /* comping */
+})},
+{ name:'Disco · 四上底鼓', bpm:118, loop:8, notes:mk(n=>{
+  n(0,'crashL',.85);
+  for(const B of [0,4]){
+    for(let j=0;j<4;j++){
+      n(B+j,'kick');
+      n(B+j,'hihat',.5);
+      n(B+j+.5,'hihat',.6,true);   /* 反拍开镲 */
+    }
+    n(B+1,'snare',.95); n(B+3,'snare',.95);
+  }
+})},
+];
+
+/* ---------------- Web Audio 鼓声合成 ---------------- */
+let ctx=null, master=null, noiseBuf=null;
+function initAudio(){
+  ctx = new (window.AudioContext||window.webkitAudioContext)();
+  master = ctx.createDynamicsCompressor();
+  master.threshold.value=-14; master.ratio.value=4;
+  const g = ctx.createGain(); g.gain.value=.9;
+  master.connect(g); g.connect(ctx.destination);
+  const len = ctx.sampleRate*2;
+  noiseBuf = ctx.createBuffer(1,len,ctx.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+}
+function noise(t, dur, type, freq, q, vel){
+  const src=ctx.createBufferSource(); src.buffer=noiseBuf;
+  const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq; f.Q.value=q;
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(vel,t);
+  g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  src.connect(f); f.connect(g); g.connect(master);
+  src.start(t); src.stop(t+dur+.05);
+}
+function tone(t, f0, f1, dur, vel, type='sine'){
+  const o=ctx.createOscillator(); o.type=type;
+  o.frequency.setValueAtTime(f0,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(f1,20),t+dur*.4);
+  const g=ctx.createGain();
+  g.gain.setValueAtTime(vel,t);
+  g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g); g.connect(master);
+  o.start(t); o.stop(t+dur+.05);
+}
+const SYNTH = {
+  kick(t,v){ tone(t,150,45,.4,1.2*v); noise(t,.02,'highpass',2000,.5,.4*v); },
+  snare(t,v){ tone(t,190,150,.12,.55*v,'triangle'); noise(t,.18,'highpass',900,.6,.9*v); noise(t,.1,'bandpass',1800,1,.5*v); },
+  hihat(t,v,open){ noise(t,open?.4:.05,'highpass',7500,.8,(open?.55:.5)*v); if(open) noise(t,.3,'bandpass',9500,2,.25*v); },
+  tom1(t,v){ tone(t,235,155,.28,.85*v); noise(t,.03,'highpass',1500,.5,.25*v); },
+  tom2(t,v){ tone(t,180,115,.32,.9*v); noise(t,.03,'highpass',1300,.5,.25*v); },
+  ftom(t,v){ tone(t,130,80,.4,1.0*v); noise(t,.03,'highpass',1100,.5,.25*v); },
+  crashL(t,v){ noise(t,1.5,'highpass',4500,.4,.55*v); noise(t,.9,'bandpass',7000,.6,.35*v); },
+  crashR(t,v){ noise(t,1.3,'highpass',5400,.4,.5*v); noise(t,.8,'bandpass',8200,.6,.3*v); },
+  ride(t,v){ noise(t,.5,'highpass',8000,.7,.4*v); tone(t,5200,5000,.35,.06*v,'square'); },
+  cowbell(t,v){ tone(t,555,540,.18,.3*v,'square'); tone(t,825,800,.13,.22*v,'square'); noise(t,.015,'highpass',3000,.5,.15*v); },
+};
+function playDrum(lane,t,vel,open){ (lane==='hihat') ? SYNTH.hihat(t,vel,open) : SYNTH[lane](t,vel); }
+
+/* ---------------- 走带 / 调度 ---------------- */
+let playing=false, bpm=100, startTime=0;
+let schedPtr=0, schedLoop=0;
+const spb = () => 60/bpm;
+const LEAD = 1.2;
+const hitSet = new Set();
+let flashes = {};
+let particles = [];
+
+function schedule(){
+  if(!playing || !P.length) return;
+  const ahead = ctx.currentTime + .12;
+  while(true){
+    const ev = P[schedPtr];
+    const t = startTime + (schedLoop*LOOP_BEATS + ev.b)*spb();
+    if(t > ahead) break;
+    playDrum(ev.lane, Math.max(t,ctx.currentTime), ev.vel, ev.open);
+    schedPtr++;
+    if(schedPtr>=P.length){ schedPtr=0; schedLoop++; }
+  }
+}
+
+/* ---------------- 画布 ---------------- */
+const cv=document.getElementById('cv'), g2=cv.getContext('2d');
+let W=0,H=0,dpr=1;
+function resize(){
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  W=cv.clientWidth; H=cv.clientHeight;
+  cv.width=W*dpr; cv.height=H*dpr;
+  g2.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener('resize',resize); resize();
+
+/* ===== 鼓谱区（上方）===== */
+function scoreGeom(){
+  const top = 64;
+  const h = Math.min(H*.24, 175);
+  const ls = h/9;
+  const lineY = i => top + h - 2.2*ls - i*ls;
+  const x0 = 72, x1 = W - 36;
+  return { top, h, ls, lineY, x0, x1,
+    pxPerBeat: (x1 - x0) / LOOP_BEATS };
+}
+/* 符头纵向位置（标准打击乐记谱）*/
+function noteY(sg, lane){
+  const { lineY, ls } = sg;
+  switch(lane){
+    case 'kick':   return lineY(0)-ls*0.5;
+    case 'ftom':   return lineY(1)-ls*0.5;
+    case 'snare':  return lineY(2)-ls*0.5;
+    case 'tom2':   return lineY(3);
+    case 'tom1':   return lineY(3)-ls*0.5;
+    case 'cowbell':return lineY(4)-ls*0.5;
+    case 'ride':   return lineY(4);
+    case 'hihat':  return lineY(4)-ls;
+    case 'crashL': return lineY(4)-ls*1.7;
+    case 'crashR': return lineY(4)-ls*1.7;
+  }
+}
+const CYM = { hihat:1, crashL:1, crashR:1, ride:1 };
+function drawNotehead(x, y, lane, alpha, vel, open, glow){
+  const col = COLOR(lane);
+  g2.save();
+  g2.globalAlpha = alpha;
+  g2.strokeStyle = col; g2.fillStyle = col;
+  if(glow>0){ g2.shadowColor=col; g2.shadowBlur=10+glow*14; }
+  const r = 4.6;
+  if(lane==='cowbell'){          /* 三角符头 */
+    g2.lineWidth=1.6;
+    g2.beginPath();
+    g2.moveTo(x,y-r); g2.lineTo(x+r,y+r); g2.lineTo(x-r,y+r); g2.closePath();
+    g2.stroke();
+  } else if(CYM[lane]){          /* x 符头 */
+    g2.lineWidth = 1.8;
+    g2.beginPath();
+    g2.moveTo(x-r,y-r); g2.lineTo(x+r,y+r);
+    g2.moveTo(x+r,y-r); g2.lineTo(x-r,y+r);
+    g2.stroke();
+    if(open){ g2.lineWidth=1.2; g2.beginPath(); g2.arc(x,y-r-5,2.6,0,Math.PI*2); g2.stroke(); }
+  } else {                       /* 实心符头 */
+    g2.beginPath();
+    g2.ellipse(x,y,r+.8,r-.6,-0.35,0,Math.PI*2);
+    g2.fill();
+    if(vel<.45){                 /* ghost note 括号 */
+      g2.lineWidth=1; g2.globalAlpha=alpha*.8;
+      g2.beginPath(); g2.arc(x-r-3.5,y,r+1,Math.PI*.6,Math.PI*1.4); g2.stroke();
+      g2.beginPath(); g2.arc(x+r+3.5,y,r+1,Math.PI*1.6,Math.PI*.4); g2.stroke();
+    }
+  }
+  g2.restore();
+}
+/* 命中检测（与谱面绘制解耦）*/
+function detectHits(now, nowP){
+  if(!ctx || startTime===0 || !playing) return;
+  const k0 = Math.max(0, Math.floor((now-startTime)/(LOOP_BEATS*spb())));
+  for(const k of [k0-1, k0]){
+    if(k<0) continue;
+    for(let i=0;i<P.length;i++){
+      const ev=P[i];
+      const t = startTime + (k*LOOP_BEATS+ev.b)*spb();
+      const id = k+':'+i;
+      if(t<=now && now-t<.25 && !hitSet.has(id)){
+        hitSet.add(id);
+        lastHit[i]=now;
+        flashes[ev.lane]=nowP;
+        stickHit(ev.lane, nowP);
+        const kp = kitPos(ev.lane);
+        spawnParticles(kp.x, kp.y, COLOR(ev.lane), ev.vel);
+      }
+    }
+  }
+}
+/* 静态谱面 + 随演奏移动的指针 */
+function drawScore(now){
+  const sg = scoreGeom();
+  const { top, h, ls, lineY, x0, x1, pxPerBeat } = sg;
+  g2.save();
+  const pg = g2.createLinearGradient(0,top-14,0,top+h+10);
+  pg.addColorStop(0,'rgba(252,250,240,0)'); pg.addColorStop(.5,'rgba(252,250,240,.88)'); pg.addColorStop(1,'rgba(252,250,240,0)');
+  g2.fillStyle=pg; g2.fillRect(0,top-14,W,h+24);
+  /* 五线 */
+  g2.strokeStyle='rgba(96,82,56,.5)'; g2.lineWidth=1;
+  for(let i=0;i<5;i++){ g2.beginPath(); g2.moveTo(26,lineY(i)); g2.lineTo(x1+10,lineY(i)); g2.stroke(); }
+  /* 打击乐谱号 */
+  g2.fillStyle='rgba(96,82,56,.7)';
+  g2.fillRect(34, lineY(3)-2, 3.5, (lineY(1)-lineY(3))+4);
+  g2.fillRect(41, lineY(3)-2, 3.5, (lineY(1)-lineY(3))+4);
+  /* 小节线 / 拍线 */
+  for(let b=0;b<=LOOP_BEATS;b++){
+    const x = x0 + b*pxPerBeat;
+    const bar = b%4===0;
+    g2.strokeStyle = bar?'rgba(96,82,56,.45)':'rgba(96,82,56,.14)';
+    g2.lineWidth = bar?1.4:1;
+    g2.beginPath(); g2.moveTo(x,lineY(4)-(bar?ls*1.6:0)); g2.lineTo(x,lineY(0)); g2.stroke();
+  }
+  /* 音符（位置固定）*/
+  for(let i=0;i<P.length;i++){
+    const ev=P[i];
+    const x = x0 + ev.b*pxPerBeat;
+    const since = now - lastHit[i];
+    const glow = (since>=0 && since<.3) ? 1-since/.3 : 0;
+    drawNotehead(x, noteY(sg,ev.lane), ev.lane,
+      .45+ev.vel*.45+glow*.1, ev.vel, ev.open, glow);
+  }
+  /* 指针：随演奏从左到右扫过，循环回到行首 */
+  let px = x0;
+  if(ctx && startTime>0){
+    const beatNow = (now-startTime)/spb();
+    if(beatNow>0) px = x0 + (beatNow % LOOP_BEATS)*pxPerBeat;
+  }
+  g2.strokeStyle='rgba(194,160,69,.95)'; g2.lineWidth=1.6;
+  g2.shadowColor='#c2a045'; g2.shadowBlur=11;
+  g2.beginPath(); g2.moveTo(px, top-6); g2.lineTo(px, top+h+2); g2.stroke();
+  /* 指针小三角 */
+  g2.fillStyle='rgba(194,160,69,.95)';
+  g2.beginPath(); g2.moveTo(px-5,top-12); g2.lineTo(px+5,top-12); g2.lineTo(px,top-4); g2.closePath(); g2.fill();
+  g2.restore();
+}
+
+/* ===== 花园场景 ===== */
+function shade(hex, amt){            /* amt>0 调亮，<0 调暗 */
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  if(amt>=0){ r+= (255-r)*amt; g+=(255-g)*amt; b+=(255-b)*amt; }
+  else { r*=1+amt; g*=1+amt; b*=1+amt; }
+  return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
+}
+const sr = n => ((n*9301+49297)%233280)/233280;   /* 确定性伪随机 */
+const BLADE_COLS = ['#1f3d32','#2c5a45','#33604a','#274a3a'];
+const BLADE_DARK = ['#13261f','#1a352b','#21412f'];
+const IRIS_COLS  = ['#8b7fd0','#6a6cc0','#e7e3d2','#8b7fd0'];
+function drawIris(ix,iy,sz,col,seed){
+  g2.save(); g2.translate(ix,iy);
+  for(const a of [-.55,0,.55]){            /* 三片立瓣 */
+    g2.save(); g2.rotate(a);
+    g2.fillStyle=col;
+    g2.beginPath(); g2.ellipse(0,-sz*.5,sz*.3,sz*.62,0,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  for(const a of [-1.9,1.9]){              /* 两片垂瓣 */
+    g2.save(); g2.rotate(a);
+    g2.fillStyle=col==='#e7e3d2'?'#d8d3ba':shade(col,-.18);
+    g2.beginPath(); g2.ellipse(0,-sz*.4,sz*.24,sz*.5,0,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  g2.fillStyle='#c9a23e';
+  g2.beginPath(); g2.arc(0,0,sz*.16,0,Math.PI*2); g2.fill();
+  g2.restore();
+}
+function drawGrassClump(cx0,cy0,hMax,seed,nowP,front){
+  g2.save();
+  g2.translate(cx0,cy0);
+  const sway=Math.sin(nowP*.8+seed*1.7)*.04;
+  const cols=front?BLADE_DARK:BLADE_COLS;
+  const blades=front?11:14;
+  g2.lineCap='round';
+  for(let i=0;i<blades;i++){
+    const bx=(sr(seed*31+i*7)-.5)*hMax*.55;
+    const h=hMax*(.5+sr(seed*17+i*3)*.55);
+    const lean=(sr(seed+i*11)-.5)*.9+sway;
+    g2.strokeStyle=cols[(seed+i*3)%cols.length];
+    g2.lineWidth=(front?2.6:2)+sr(i*13+seed)*1.6;
+    g2.beginPath();
+    g2.moveTo(bx,0);
+    g2.quadraticCurveTo(bx+lean*h*.45,-h*.62, bx+lean*h,-h);
+    g2.stroke();
+  }
+  /* 丛中鸢尾 */
+  const nf=front?(seed%2):(1+(seed%3===0?1:0));
+  for(let i=0;i<nf;i++){
+    const ix=(sr(seed*41+i*9)-.5)*hMax*.4;
+    const ih=hMax*(.85+sr(seed*53+i*13)*.3);
+    const col=IRIS_COLS[(seed+i*5)%IRIS_COLS.length];
+    g2.strokeStyle='#2c5a45'; g2.lineWidth=2;
+    g2.beginPath();
+    g2.moveTo(ix,0);
+    g2.quadraticCurveTo(ix+sway*ih*8,-ih*.6, ix+sway*ih*12,-ih);
+    g2.stroke();
+    drawIris(ix+sway*ih*12,-ih,(front?13:10)+sr(seed+i)*4,col,seed);
+  }
+  g2.restore();
+}
+function drawRoom(nowP){
+  const {s,cx,cy}=kitScale();
+  /* 暮色池塘底 */
+  const dusk=g2.createLinearGradient(0,0,0,H);
+  dusk.addColorStop(0,'#16302c'); dusk.addColorStop(.5,'#2a564b'); dusk.addColorStop(1,'#1e4238');
+  g2.fillStyle=dusk; g2.fillRect(0,0,W,H);
+  /* 上缘雾气 */
+  const mist=g2.createLinearGradient(0,0,0,H*.3);
+  mist.addColorStop(0,'rgba(178,200,188,.14)'); mist.addColorStop(1,'rgba(178,200,188,0)');
+  g2.fillStyle=mist; g2.fillRect(0,0,W,H*.3);
+  /* 中央月光金池 */
+  const pool=g2.createRadialGradient(cx,cy,50*s,cx,cy,520*s);
+  pool.addColorStop(0,'rgba(224,196,120,.22)');
+  pool.addColorStop(.5,'rgba(224,196,120,.08)');
+  pool.addColorStop(1,'rgba(224,196,120,0)');
+  g2.fillStyle=pool;
+  g2.beginPath(); g2.ellipse(cx,cy,530*s,330*s,0,0,Math.PI*2); g2.fill();
+  /* 金色水光碎片（横向短划，像画里的水面反光） */
+  for(let i=0;i<46;i++){
+    const fx=sr(i*97+11)*W, fy=sr(i*131+7)*H;
+    if(Math.hypot(fx-cx,(fy-cy)*1.4)<330*s) continue;
+    const fw=6+sr(i*61)*22;
+    g2.fillStyle=`rgba(224,196,120,${.10+sr(i*23)*.26})`;
+    g2.beginPath(); g2.ellipse(fx,fy,fw,1.6+sr(i*7)*1.3,0,0,Math.PI*2); g2.fill();
+  }
+  /* 金边睡莲叶 */
+  for(let i=0;i<7;i++){
+    const lx=sr(i*53+19)*W, ly=sr(i*71+31)*H;
+    if(Math.hypot(lx-cx,(ly-cy)*1.4)<400*s) continue;
+    const lr=15+sr(i*37)*20;
+    g2.save(); g2.translate(lx,ly); g2.rotate(sr(i*13)*3);
+    g2.fillStyle='rgba(140,124,66,.4)';
+    g2.strokeStyle='rgba(216,186,110,.45)'; g2.lineWidth=1.4;
+    g2.beginPath();
+    g2.moveTo(0,0); g2.arc(0,0,lr,.28,Math.PI*2-.28); g2.closePath();
+    g2.fill(); g2.stroke();
+    g2.restore();
+  }
+  /* 通往露台的三块踏石 */
+  g2.fillStyle='#8e9684';
+  for(let i=0;i<3;i++){
+    const t=(i+1)/4;
+    const sy=H-10-(H-10-(cy+250*s))*t;
+    g2.beginPath();
+    g2.ellipse(cx+((i%2)?14:-10), sy, 16, 9, 0, 0, Math.PI*2);
+    g2.fill();
+  }
+  /* 环抱的草丛与鸢尾（背景层） */
+  for(const [bx,by,hh,sd] of [
+    [W*.03,36,96,3],[W*.12,16,76,7],[W*.9,18,82,11],[W*.985,46,100,15],
+  ]) drawGrassClump(bx,by,hh,sd,nowP,false);
+  const nL=Math.ceil(H/165);
+  for(let i=0;i<=nL;i++){
+    drawGrassClump(-10,H*.12+i*(H*.84/nL),104+sr(i*7)*30,19+i,nowP,false);
+    drawGrassClump(W+10,H*.16+i*(H*.8/nL),98+sr(i*13)*30,37+i,nowP,false);
+  }
+  const nB=Math.ceil(W/150);
+  for(let i=0;i<=nB;i++){
+    drawGrassClump(W*.03+i*(W*.94/nB),H+8,112+sr(i*23)*34,57+i,nowP,false);
+  }
+  /* 萤火 */
+  for(let i=0;i<8;i++){
+    const px=sr(i*5+1)*W + Math.sin(nowP*(.3+sr(i)*.35)+i*1.7)*38;
+    const py=H*.1+sr(i*11+3)*H*.76 + Math.sin(nowP*(.22+sr(i*3)*.3)+i*2.3)*26;
+    const al=.3+.25*Math.sin(nowP*1.1+i*2);
+    if(al<=0) continue;
+    g2.save();
+    g2.fillStyle=`rgba(236,212,140,${Math.max(0,al)})`;
+    g2.shadowColor='rgba(236,212,140,.9)'; g2.shadowBlur=7;
+    g2.beginPath(); g2.arc(px,py,1.5+sr(i*17)*1.5,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  /* 暮色虚光 */
+  const vig=g2.createRadialGradient(cx,cy,Math.min(W,H)*.36,cx,cy,Math.max(W,H)*.74);
+  vig.addColorStop(0,'rgba(8,20,16,0)');
+  vig.addColorStop(1,'rgba(8,20,16,.42)');
+  g2.fillStyle=vig; g2.fillRect(0,0,W,H);
+}
+/* 前景草（盖在鼓组之上，身在丛中的纵深） */
+function drawFrontLeaves(nowP){
+  drawGrassClump(W*.06,H+6,130,83,nowP,true);
+  drawGrassClump(W*.94,H+4,124,91,nowP,true);
+  drawGrassClump(W*.5,H+26,96,97,nowP,true);
+}
+
+/* ===== 俯视鼓组（鼓手视角：画面下方 = 鼓手）===== */
+/* 设计坐标：原点 = 鼓组中心，x 右正，y 下正（朝鼓手），幅面 ~800×430 */
+const KIT = {
+  kick:   { type:'kick', x:   0, y:-12, r: 92 },
+  tom1:   { type:'drum', x: -54, y:-70, r: 44 },
+  tom2:   { type:'drum', x:  52, y:-66, r: 54 },
+  snare:  { type:'drum', x: -81, y: 36, r: 52 },
+  ftom:   { type:'drum', x: 104, y: 76, r: 68 },
+  hihat:  { type:'hh',   x:-180, y:-10, r: 50 },
+  crashL: { type:'cym',  x:-153, y:-128, r: 66 },
+  crashR: { type:'cym',  x: 128, y:-162, r: 74 },
+  ride:   { type:'cym',  x: 210, y:-30, r: 82 },
+  cowbell:{ type:'bell', x:  -2, y:-34 },
+};
+function kitScale(){
+  const sg=scoreGeom();
+  const topEdge = sg.top + sg.h + 26;
+  const availH = H - topEdge - 34;
+  const s = Math.min(W/820, availH/460);
+  return { s, cx: W/2, cy: topEdge + availH*0.56 };
+}
+function kitPos(lane){
+  const {s,cx,cy}=kitScale(); const k=KIT[lane];
+  return { x: cx+k.x*s, y: cy+k.y*s, s };
+}
+function glowOf(lane,nowP){
+  const f=flashes[lane];
+  return f===undefined?0:Math.max(0,1-(nowP-f)/.35);
+}
+/* 石板露台（替代地毯） */
+function drawRug(){
+  const {s,cx,cy}=kitScale();
+  g2.save();
+  const rx=380*s, ry=235*s;
+  const rg=g2.createRadialGradient(cx,cy,rx*.15,cx,cy,rx);
+  rg.addColorStop(0,'#d0c7af'); rg.addColorStop(.85,'#bcb094'); rg.addColorStop(1,'#a1957a');
+  g2.fillStyle=rg;
+  g2.beginPath(); g2.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); g2.fill();
+  g2.strokeStyle='rgba(108,94,68,.45)'; g2.lineWidth=2; g2.stroke();
+  /* 石板缝 */
+  g2.strokeStyle='rgba(108,94,68,.22)'; g2.lineWidth=1.2;
+  for(const f of [.72,.45]){ g2.beginPath(); g2.ellipse(cx,cy,rx*f,ry*f,0,0,Math.PI*2); g2.stroke(); }
+  for(let i=0;i<10;i++){
+    const a=i*Math.PI/5+.3;
+    g2.beginPath();
+    g2.moveTo(cx+Math.cos(a)*rx*.45, cy+Math.sin(a)*ry*.45);
+    g2.lineTo(cx+Math.cos(a)*rx*.99, cy+Math.sin(a)*ry*.99);
+    g2.stroke();
+  }
+  /* 露台边苔藓 */
+  g2.strokeStyle='rgba(111,158,85,.55)'; g2.lineWidth=3;
+  g2.setLineDash([14,22]);
+  g2.beginPath(); g2.ellipse(cx,cy,rx*1.02,ry*1.02,0,0,Math.PI*2); g2.stroke();
+  g2.setLineDash([]);
+  g2.restore();
+}
+/* 镲片 = 花朵（ride 向日葵 / crash 雏菊系） */
+function drawCymbalTop(lane, nowP){
+  const {x,y,s}=kitPos(lane); const k=KIT[lane];
+  const glow=glowOf(lane,nowP), col=COLOR(lane);
+  const pulse = glow>0 ? 1+Math.sin(nowP*46)*.05*glow : 1;
+  const r=k.r*s*pulse;
+  g2.save();
+  g2.translate(x,y);
+  g2.rotate(Math.sin(nowP*1.3+x*.013)*.05 + (glow>0?Math.sin(nowP*40)*.07*glow:0));
+  g2.shadowColor='rgba(60,80,40,.3)'; g2.shadowBlur=7;
+  const petals = lane==='ride' ? 16 : 12;
+  for(let i=0;i<petals;i++){
+    const a=i*Math.PI*2/petals;
+    g2.save(); g2.rotate(a);
+    const pg=g2.createLinearGradient(0,-r,0,0);
+    pg.addColorStop(0, shade(col, glow>0?.35:.16));
+    pg.addColorStop(1, col);
+    g2.fillStyle=pg;
+    g2.beginPath(); g2.ellipse(0,-r*.62,r*.27,r*.5,0,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  g2.shadowColor=col; g2.shadowBlur = glow>0 ? 12+glow*22 : 0;
+  const core=g2.createRadialGradient(-r*.08,-r*.08,r*.04,0,0,r*.34);
+  core.addColorStop(0,'#e0c258'); core.addColorStop(1,'#99701e');
+  g2.fillStyle=core;
+  g2.beginPath(); g2.arc(0,0,r*.32,0,Math.PI*2); g2.fill();
+  g2.shadowBlur=0;
+  g2.fillStyle='rgba(118,78,20,.5)';
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4+.4;
+    g2.beginPath(); g2.arc(Math.cos(a)*r*.17,Math.sin(a)*r*.17,r*.032,0,Math.PI*2); g2.fill();
+  }
+  g2.restore();
+}
+/* 踩镲 = 睡莲叶上的八瓣花 */
+function drawHiHatTop(nowP){
+  const {x,y,s}=kitPos('hihat'); const k=KIT.hihat;
+  const glow=glowOf('hihat',nowP), col=COLOR('hihat');
+  const r=k.r*s;
+  g2.save();
+  g2.translate(x,y);
+  g2.rotate(Math.sin(nowP*1.1+2)*.04 + (glow>0?Math.sin(nowP*44)*.07*glow:0));
+  /* 睡莲叶（带缺口） */
+  g2.fillStyle='#3f6b50';
+  g2.shadowColor='rgba(60,80,40,.3)'; g2.shadowBlur=7;
+  g2.beginPath();
+  g2.arc(3*s,3*s,r,0,Math.PI*2);
+  g2.fill();
+  g2.shadowBlur=0;
+  /* 叶脉 */
+  g2.strokeStyle='rgba(255,255,255,.18)'; g2.lineWidth=1;
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4+.15;
+    g2.beginPath(); g2.moveTo(3*s,3*s);
+    g2.lineTo(3*s+Math.cos(a)*r*.92, 3*s+Math.sin(a)*r*.92); g2.stroke();
+  }
+  /* 睡莲叶的细裂缝 */
+  g2.fillStyle='rgba(12,30,24,.5)';
+  g2.beginPath();
+  g2.moveTo(3*s,3*s);
+  g2.lineTo(3*s+Math.cos(-.34)*r*1.01, 3*s+Math.sin(-.34)*r*1.01);
+  g2.lineTo(3*s+Math.cos(-.16)*r*1.01, 3*s+Math.sin(-.16)*r*1.01);
+  g2.closePath(); g2.fill();
+  /* 上层八瓣白鸢尾 */
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4;
+    g2.save(); g2.rotate(a);
+    g2.fillStyle = glow>0 ? '#f7f3e2' : '#e7e3d2';
+    g2.beginPath(); g2.ellipse(0,-r*.46,r*.22,r*.4,0,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  g2.shadowColor=col; g2.shadowBlur=glow>0?10+glow*20:0;
+  g2.fillStyle='#e2d094';
+  g2.beginPath(); g2.arc(0,0,r*.2,0,Math.PI*2); g2.fill();
+  g2.restore();
+}
+/* 鼓 = 陶土花盆（俯视：盆沿 + 土壤 + 叶簇） */
+function drawDrumTop(lane, nowP){
+  const {x,y,s}=kitPos(lane); const k=KIT[lane];
+  const glow=glowOf(lane,nowP), col=COLOR(lane);
+  const r=k.r*s;
+  g2.save();
+  g2.translate(x,y);
+  g2.shadowColor='rgba(60,80,40,.3)'; g2.shadowBlur=6;
+  const rim=g2.createRadialGradient(-r*.3,-r*.3,r*.2,0,0,r);
+  rim.addColorStop(0,'#b07040'); rim.addColorStop(1,'#7e4a28');
+  g2.fillStyle=rim;
+  g2.beginPath(); g2.arc(0,0,r,0,Math.PI*2); g2.fill();
+  g2.shadowBlur=0;
+  g2.strokeStyle = glow>0 ? col : 'rgba(118,60,26,.55)';
+  g2.lineWidth=2+glow*2;
+  if(glow>0){ g2.shadowColor=col; g2.shadowBlur=12+glow*20; }
+  g2.stroke(); g2.shadowBlur=0;
+  g2.fillStyle='#4c3823';
+  g2.beginPath(); g2.arc(0,0,r*.8,0,Math.PI*2); g2.fill();
+  /* 叶簇 */
+  const leaves = r>56*s ? 9 : 7;
+  g2.rotate(Math.sin(nowP*1.6+x*.02)*.05 + (glow>0?Math.sin(nowP*42)*.1*glow:0));
+  for(let i=0;i<leaves;i++){
+    const a=i*Math.PI*2/leaves + (i%2)*.2;
+    g2.save(); g2.rotate(a);
+    const lg=g2.createLinearGradient(0,0,0,-r*.78);
+    lg.addColorStop(0, shade(col,-.12));
+    lg.addColorStop(1, shade(col, glow>0?.35:.18));
+    g2.fillStyle=lg;
+    g2.beginPath();
+    g2.moveTo(0,0);
+    g2.quadraticCurveTo(r*.2,-r*.42, 0,-r*.78);
+    g2.quadraticCurveTo(-r*.2,-r*.42, 0,0);
+    g2.closePath(); g2.fill();
+    g2.strokeStyle='rgba(255,255,255,.18)'; g2.lineWidth=1;
+    g2.beginPath(); g2.moveTo(0,-r*.08); g2.lineTo(0,-r*.7); g2.stroke();
+    g2.restore();
+  }
+  /* 命中：中心绽放一朵小白花 */
+  if(glow>0){
+    g2.fillStyle=`rgba(255,250,232,${.55*glow})`;
+    for(let i=0;i<5;i++){
+      const a=i*Math.PI*2/5;
+      g2.beginPath(); g2.ellipse(Math.cos(a)*r*.12,Math.sin(a)*r*.12,r*.07,r*.13,a+Math.PI/2,0,Math.PI*2); g2.fill();
+    }
+  }
+  g2.fillStyle = glow>0 ? '#fff4cc' : '#e8d8a8';
+  g2.beginPath(); g2.arc(0,0,r*(.06+glow*.03),0,Math.PI*2); g2.fill();
+  g2.restore();
+}
+/* 底鼓 = 大陶盆里的龟背竹，踏板 = 踏脚石 */
+function drawKickTop(nowP){
+  const {x,y,s}=kitPos('kick');
+  const glow=glowOf('kick',nowP), col=COLOR('kick');
+  const r=KIT.kick.r*s;
+  g2.save();
+  g2.translate(x,y);
+  g2.shadowColor='rgba(60,80,40,.35)'; g2.shadowBlur=10;
+  const rim=g2.createRadialGradient(-r*.3,-r*.35,r*.2,0,0,r);
+  rim.addColorStop(0,'#a8663a'); rim.addColorStop(1,'#744322');
+  g2.fillStyle=rim;
+  g2.beginPath(); g2.arc(0,0,r,0,Math.PI*2); g2.fill();
+  g2.shadowBlur=0;
+  g2.strokeStyle = glow>0 ? col : 'rgba(115,58,24,.6)';
+  g2.lineWidth=3+glow*2;
+  if(glow>0){ g2.shadowColor=col; g2.shadowBlur=14+glow*24; }
+  g2.stroke(); g2.shadowBlur=0;
+  g2.strokeStyle='rgba(255,222,184,.28)'; g2.lineWidth=2;
+  g2.beginPath(); g2.arc(0,0,r*.9,0,Math.PI*2); g2.stroke();
+  g2.fillStyle='#46331f';
+  g2.beginPath(); g2.arc(0,0,r*.82,0,Math.PI*2); g2.fill();
+  /* 大叶植物 */
+  g2.rotate(Math.sin(nowP*1.2)*.04 + (glow>0?Math.sin(nowP*40)*.08*glow:0));
+  for(let i=0;i<6;i++){
+    const a=i*Math.PI/3+.26;
+    g2.save(); g2.rotate(a);
+    const lg=g2.createLinearGradient(0,0,0,-r*.8);
+    lg.addColorStop(0,shade(col,-.12));
+    lg.addColorStop(1,shade(col, glow>0?.32:.16));
+    g2.fillStyle=lg;
+    g2.beginPath();
+    g2.moveTo(0,-r*.1);
+    g2.bezierCurveTo(r*.34,-r*.3, r*.3,-r*.72, 0,-r*.82);
+    g2.bezierCurveTo(-r*.3,-r*.72, -r*.34,-r*.3, 0,-r*.1);
+    g2.closePath(); g2.fill();
+    g2.strokeStyle='rgba(255,255,255,.2)'; g2.lineWidth=1.2;
+    g2.beginPath(); g2.moveTo(0,-r*.14); g2.lineTo(0,-r*.76); g2.stroke();
+    for(const t of [.3,.45,.6]){
+      g2.beginPath(); g2.moveTo(0,-r*t); g2.lineTo(r*.14,-r*(t+.1)); g2.stroke();
+      g2.beginPath(); g2.moveTo(0,-r*t); g2.lineTo(-r*.14,-r*(t+.1)); g2.stroke();
+    }
+    g2.restore();
+  }
+  g2.restore();
+  /* 踏脚石（踩底鼓时点亮） */
+  const py=y+r;
+  g2.save();
+  g2.fillStyle = glow>0 ? shade(col,.55) : '#aea281';
+  if(glow>0){ g2.shadowColor=col; g2.shadowBlur=12; }
+  g2.beginPath(); g2.ellipse(x, py+26*s, 17*s, 11*s, 0, 0, Math.PI*2); g2.fill();
+  g2.strokeStyle='rgba(108,94,68,.45)'; g2.lineWidth=1.5; g2.stroke();
+  g2.restore();
+}
+/* 牛铃 = 小陶盆里的郁金香花苞 */
+function drawCowbellTop(nowP){
+  const {x,y,s}=kitPos('cowbell');
+  const glow=glowOf('cowbell',nowP), col=COLOR('cowbell');
+  const w1=20*s, w2=30*s, h=30*s;
+  g2.save();
+  g2.translate(x,y);
+  const grad=g2.createLinearGradient(0,-h/2,0,h/2);
+  grad.addColorStop(0,'#a25c30'); grad.addColorStop(1,'#74421f');
+  g2.fillStyle=grad;
+  g2.beginPath();
+  g2.moveTo(-w1/2,-h/2); g2.lineTo(w1/2,-h/2);
+  g2.lineTo(w2/2,h/2); g2.lineTo(-w2/2,h/2);
+  g2.closePath(); g2.fill();
+  g2.strokeStyle = glow>0 ? col : 'rgba(118,60,26,.5)';
+  g2.lineWidth=1.6+glow*1.4;
+  if(glow>0){ g2.shadowColor=col; g2.shadowBlur=10+glow*18; }
+  g2.stroke(); g2.shadowBlur=0;
+  /* 花苞 */
+  const bl = 1+(glow>0?.18*glow:0) + Math.sin(nowP*1.8)*.03;
+  g2.fillStyle = glow>0 ? shade(col,.3) : col;
+  g2.beginPath();
+  g2.ellipse(0,-h*.34, 7.5*s*bl, 10*s*bl, 0, 0, Math.PI*2);
+  g2.fill();
+  g2.strokeStyle='rgba(255,240,214,.55)'; g2.lineWidth=1;
+  g2.beginPath(); g2.moveTo(0,-h*.34-9*s*bl); g2.lineTo(0,-h*.34+9*s*bl); g2.stroke();
+  g2.restore();
+}
+
+/* ===== 鼓槌（跟随敲击）===== */
+const HAND = { snare:'L', tom1:'L', crashL:'L', hihat:'R', ride:'R', crashR:'R',
+               tom2:'R', ftom:'R', cowbell:'R' };
+const sticks = {
+  L:{ x:null, y:null, tx:null, ty:null, hitT:-9 },
+  R:{ x:null, y:null, tx:null, ty:null, hitT:-9 },
+};
+function stickAnchor(hand){
+  const {s,cx,cy}=kitScale();
+  return { x: cx+(hand==='L'?-195:195)*s, y: cy+235*s, s };
+}
+function stickHit(lane,nowP){
+  const hand=HAND[lane];
+  if(!hand) return;                       // kick 用脚
+  const p=kitPos(lane);
+  sticks[hand].tx=p.x; sticks[hand].ty=p.y;
+  sticks[hand].hitT=nowP;
+}
+function drawSticks(nowP,dt){
+  for(const hand of ['L','R']){
+    const st=sticks[hand], a=stickAnchor(hand);
+    /* 初始/默认停留位 */
+    if(st.tx===null){
+      const home=kitPos(hand==='L'?'snare':'hihat');
+      st.tx=home.x; st.ty=home.y;
+    }
+    if(st.x===null){ st.x=st.tx; st.y=st.ty; }
+    /* 棒尖快速追到目标部件中心 → 必定击中 */
+    const f=Math.min(1,dt*18);
+    st.x+=(st.tx-st.x)*f; st.y+=(st.ty-st.y)*f;
+    const since=nowP-st.hitT;
+    const strike = since<.13 ? Math.sin(since/.13*Math.PI) : 0;
+    /* 棒身定长，从棒尖朝鼓手方向延伸（手悬在鼓面上方移动）*/
+    const L=185*a.s;
+    const dx=st.x-a.x, dy=st.y-a.y;
+    const d=Math.hypot(dx,dy)||1;
+    const ux=dx/d, uy=dy/d;
+    const tipX=st.x-ux*4*a.s*strike, tipY=st.y-uy*4*a.s*strike; /* 击打瞬间微缩 */
+    const buttX=tipX-ux*L, buttY=tipY-uy*L;
+    g2.save();
+    g2.strokeStyle='rgba(126,90,54,.92)';
+    g2.lineWidth=4.5*a.s; g2.lineCap='round';
+    g2.shadowColor='rgba(0,0,0,.5)'; g2.shadowBlur=4;
+    g2.beginPath();
+    g2.moveTo(buttX,buttY);
+    g2.lineTo(tipX,tipY); g2.stroke();
+    g2.beginPath(); g2.arc(tipX,tipY,3.6*a.s,0,Math.PI*2);
+    g2.fillStyle = strike>0 ? '#e9d9ae' : '#c9a878';
+    g2.fill();
+    /* 枝尾的一片叶子 */
+    g2.save();
+    g2.translate(buttX,buttY); g2.rotate(Math.atan2(uy,ux));
+    g2.fillStyle='#6f9e55';
+    g2.beginPath(); g2.ellipse(6*a.s,-2*a.s,7*a.s,3.2*a.s,-.5,0,Math.PI*2); g2.fill();
+    g2.strokeStyle='rgba(46,80,32,.5)'; g2.lineWidth=1;
+    g2.beginPath(); g2.moveTo(0,0); g2.lineTo(11*a.s,-4*a.s); g2.stroke();
+    g2.restore();
+    g2.restore();
+  }
+}
+
+function drawKit(nowP,dt){
+  drawRug();
+  /* 鼓 → 镲（镲片更高，俯视在最上层）→ 牛铃/鼓槌 */
+  drawKickTop(nowP);
+  drawDrumTop('tom1',nowP,false);
+  drawDrumTop('tom2',nowP,false);
+  drawDrumTop('snare',nowP,true);
+  drawDrumTop('ftom',nowP,false);
+  drawCymbalTop('ride',nowP);
+  drawCymbalTop('crashL',nowP);
+  drawCymbalTop('crashR',nowP);
+  drawHiHatTop(nowP);
+  drawCowbellTop(nowP);
+  drawSticks(nowP,dt);
+}
+
+/* ---------------- 粒子 ---------------- */
+function spawnParticles(cx, cy, color, vel){
+  const n = 8 + Math.round(vel*12);
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2;          // 俯视：向四周迸
+    const sp = (40+Math.random()*170)*(0.5+vel*.7);
+    particles.push({ x:cx, y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      life:.45+Math.random()*.4, t:0, color, r:1.6+Math.random()*2.4,
+      rot:Math.random()*6.28, vr:(Math.random()-.5)*9 });
+  }
+}
+
+/* ---------------- 主渲染 ---------------- */
+let lastTs=0;
+function render(ts){
+  requestAnimationFrame(render);
+  const dt = Math.min(.05,(ts-lastTs)/1000)||0; lastTs=ts;
+  const nowP = ts/1000;
+  const now = ctx ? ctx.currentTime : 0;
+
+  drawRoom(nowP);
+
+  detectHits(now, nowP);
+  drawScore(now);
+  if(playing) schedule();
+  if(hitSet.size>600) hitSet.clear();
+  drawKit(nowP,dt);
+
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.t+=dt;
+    if(p.t>=p.life){ particles.splice(i,1); continue; }
+    p.x+=p.vx*dt; p.y+=p.vy*dt;
+    p.vx*=1-1.6*dt; p.vy*=1-1.6*dt;
+    p.vy+=46*dt;                                  /* 花瓣缓缓飘落 */
+    p.vx+=Math.sin(p.t*6+p.rot)*26*dt;            /* 飘摆 */
+    p.rot+=p.vr*dt;
+    const a=1-p.t/p.life;
+    g2.save();
+    g2.globalAlpha=a*.92;
+    g2.fillStyle=p.color;
+    g2.translate(p.x,p.y); g2.rotate(p.rot);
+    g2.beginPath(); g2.ellipse(0,0,p.r*1.9*a+.5,p.r*a+.4,0,0,Math.PI*2); g2.fill();
+    g2.restore();
+  }
+  drawFrontLeaves(nowP);
+}
+requestAnimationFrame(render);
+
+/* ---------------- 控制 ---------------- */
+const playBtn=document.getElementById('playBtn');
+const bpmSlider=document.getElementById('bpm'), bpmVal=document.getElementById('bpmVal');
+bpmSlider.addEventListener('input',()=>{ bpmVal.textContent=bpmSlider.value; });
+
+/* 曲库选择 */
+const grooveSel=document.getElementById('grooveSel');
+function rebuildGrooveSel(){
+  grooveSel.innerHTML='';
+  GROOVES.forEach((g,i)=>{
+    const o=document.createElement('option');
+    o.value=i; o.textContent=g.name;
+    grooveSel.appendChild(o);
+  });
+}
+function loadGroove(i){
+  const g=GROOVES[i];
+  setPattern(g.notes, g.loop);
+  bpmSlider.value=g.bpm; bpmVal.textContent=g.bpm;
+  grooveSel.value=String(i);
+}
+rebuildGrooveSel();
+loadGroove(0);
+grooveSel.addEventListener('change',()=>{
+  loadGroove(+grooveSel.value);
+  if(ctx && startTime>0) start();   /* 已在播放状态则换曲重开 */
+});
+
+/* ---------------- MIDI 导入（SMF，鼓轨 = 通道 10）---------------- */
+const GM_MAP = {
+  35:'kick',36:'kick',
+  38:'snare',40:'snare',37:'snare',
+  42:'hihat',44:'hihat',46:'hihat',   /* 46 = 开镲 */
+  48:'tom1',50:'tom1',
+  45:'tom2',47:'tom2',
+  41:'ftom',43:'ftom',
+  49:'crashL',55:'crashL',
+  57:'crashR',52:'crashR',
+  51:'ride',53:'ride',59:'ride',
+  56:'cowbell',
+};
+function parseMidi(buf){
+  const d=new DataView(buf); let p=0;
+  const u32=()=>{const v=d.getUint32(p);p+=4;return v;};
+  const u16=()=>{const v=d.getUint16(p);p+=2;return v;};
+  const u8=()=>d.getUint8(p++);
+  const varint=()=>{let v=0,b;do{b=u8();v=(v<<7)|(b&0x7F);}while(b&0x80);return v;};
+  if(u32()!==0x4D546864) throw new Error('不是 MIDI 文件');
+  u32(); u16(); const ntr=u16(), div=u16();
+  if(div&0x8000) throw new Error('暂不支持 SMPTE 时间格式');
+  let bpmFound=null; const hits=[];
+  for(let tr=0;tr<ntr;tr++){
+    if(u32()!==0x4D54726B) throw new Error('轨道块损坏');
+    const len=u32(); const end=p+len;
+    let tick=0, status=0;
+    while(p<end){
+      tick+=varint();
+      let s=u8();
+      if(s<0x80){ p--; s=status; } else status=s;
+      if(s===0xFF){
+        const type=u8(), l=varint();
+        if(type===0x51 && bpmFound===null){
+          const mpqn=(d.getUint8(p)<<16)|(d.getUint8(p+1)<<8)|d.getUint8(p+2);
+          bpmFound=60000000/mpqn;
+        }
+        p+=l;
+      } else if(s===0xF0||s===0xF7){ p+=varint(); }
+      else {
+        const hi=s&0xF0, ch=s&0x0F;
+        if(hi===0xC0||hi===0xD0){ p+=1; }
+        else {
+          const d1=u8(), d2=u8();
+          if(hi===0x90 && d2>0 && ch===9) hits.push({tick, note:d1, vel:d2});
+        }
+      }
+    }
+    p=end;
+  }
+  return { div, bpm: bpmFound||120, hits };
+}
+function midiToGroove(buf, fname){
+  const { div, bpm, hits } = parseMidi(buf);
+  const notes=[];
+  for(const h of hits){
+    const lane=GM_MAP[h.note];
+    if(!lane) continue;
+    notes.push({ b:h.tick/div, lane,
+      vel:Math.max(.15,Math.min(1,h.vel/127)),
+      open:h.note===46 });
+  }
+  if(!notes.length) throw new Error('通道 10 上没有找到鼓音符');
+  notes.sort((a,b)=>a.b-b.b);
+  const maxB=notes[notes.length-1].b;
+  const loop=Math.max(4, Math.ceil((maxB+.001)/4)*4);
+  return { name:'MIDI · '+fname, bpm:Math.round(bpm), loop, notes };
+}
+const midiBtn=document.getElementById('midiBtn'), midiFile=document.getElementById('midiFile');
+midiBtn.addEventListener('click',()=>midiFile.click());
+midiFile.addEventListener('change',()=>{
+  const f=midiFile.files[0];
+  if(!f) return;
+  f.arrayBuffer().then(buf=>{
+    const g=midiToGroove(buf, f.name.replace(/\.midi?$/i,''));
+    GROOVES.push(g);
+    rebuildGrooveSel();
+    loadGroove(GROOVES.length-1);
+    if(ctx && startTime>0) start();
+  }).catch(err=>alert('MIDI 解析失败：'+err.message));
+  midiFile.value='';
+});
+
+function start(){
+  if(!ctx) initAudio();
+  ctx.resume();
+  bpm=+bpmSlider.value;
+  startTime = ctx.currentTime + LEAD;
+  schedPtr=0; schedLoop=0; hitSet.clear(); particles=[]; flashes={};
+  playing=true;
+  playBtn.textContent='⏸';
+}
+function pause(){ playing=false; ctx.suspend(); playBtn.textContent='▶'; }
+function resume(){ playing=true; ctx.resume(); playBtn.textContent='⏸'; }
+playBtn.addEventListener('click',()=>{
+  if(!ctx || startTime===0) start();
+  else if(playing) pause();
+  else resume();
+});
+
+/* 键盘实时演奏 */
+const KEYMAP={ b:'kick', j:'snare', f:'hihat', g:['hihat',true],
+  u:'tom1', i:'tom2', k:'ftom', r:'crashL', t:'crashR', o:'ride', y:'cowbell' };
+
+/* 左侧图例（带 icon）*/
+function legendIcon(lane, open){
+  const col = COLOR(lane);
+  const k = KIT[lane];
+  const S = `width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg"`;
+  if(lane==='cowbell')
+    return `<svg ${S}><polygon points="6.5,9 11.5,9 13,15.5 5,15.5" fill="#a25c30"/><ellipse cx="9" cy="5.4" rx="3.1" ry="4.2" fill="${col}"/></svg>`;
+  if(k.type==='cym'||k.type==='hh'){
+    let petals='';
+    for(let i=0;i<6;i++) petals+=`<ellipse rx="2.5" ry="4.8" transform="translate(9,9) rotate(${i*60}) translate(0,-4.8)" fill="${col}"/>`;
+    const o = open ? `<circle cx="15.4" cy="2.6" r="1.7" fill="none" stroke="${col}" stroke-width="1.1"/>` : '';
+    return `<svg ${S}>${petals}<circle cx="9" cy="9" r="2.6" fill="#c9a23e"/>${o}</svg>`;
+  }
+  return `<svg ${S}><polygon points="4,9.5 14,9.5 12.4,16 5.6,16" fill="#a25c30"/><path d="M9 9.5 C 4.6 6.2 5.8 1.8 9 1.8 C 12.2 1.8 13.4 6.2 9 9.5 Z" fill="${col}"/></svg>`;
+}
+(function buildLegend(){
+  const rows = [
+    ['B','kick','底鼓'], ['J','snare','军鼓'],
+    ['F','hihat','闭镲'], ['G','hihat','开镲',true],
+    ['U','tom1','嗵鼓 1'], ['I','tom2','嗵鼓 2'], ['K','ftom','落地嗵'],
+    ['R','crashL','左吊镲'], ['T','crashR','右吊镲'],
+    ['O','ride','叮叮'], ['Y','cowbell','牛铃'],
+  ];
+  const el = document.getElementById('legend');
+  for(const [key,lane,label,open] of rows){
+    const div = document.createElement('div');
+    div.className='lg-row';
+    div.innerHTML = `<kbd>${key}</kbd>${legendIcon(lane,open)}<span>${label}</span>`;
+    el.appendChild(div);
+  }
+})();
+window.addEventListener('keydown',e=>{
+  if(e.repeat) return;
+  const m=KEYMAP[e.key.toLowerCase()];
+  if(!m) return;
+  if(!ctx) initAudio();
+  ctx.resume();
+  const lane=Array.isArray(m)?m[0]:m, open=Array.isArray(m);
+  playDrum(lane, ctx.currentTime, .95, open);
+  const nowP=performance.now()/1000;
+  flashes[lane]=nowP;
+  stickHit(lane,nowP);
+  const kp=kitPos(lane);
+  spawnParticles(kp.x, kp.y, COLOR(lane), .9);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DrumFeather · 卡片方案 v3 · 三卡排满一行</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  /* v3 · 在 A 基础上改：三张作品卡排满一行，版心放宽到 1280px，封面比例 1:1 更像唱片套 */
+  :root {
+    --cream: #ede5d2;
+    --cream-deep: #e3d9bf;
+    --cream-card: #f3ecd9;
+    --kraft: #cdb88a;
+    --kraft-deep: #b89e6c;
+    --ink: #3a342a;
+    --ink-soft: rgba(58, 52, 42, 0.66);
+    --ink-fade: rgba(58, 52, 42, 0.38);
+    --ink-faint: rgba(58, 52, 42, 0.22);
+    --label-red: #c1463a;
+    --font-serif: 'Noto Serif SC', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-serif);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 88px 48px 64px; }
+
+  .hero { margin-bottom: 72px; max-width: 720px; }
+  .name-row { display: flex; align-items: baseline; gap: 18px; margin-bottom: 24px; }
+  .name-en { font-weight: 600; font-size: 46px; letter-spacing: -0.01em; }
+  .name-cn { font-size: 18px; color: var(--ink-soft); letter-spacing: 0.06em; }
+  .tagline { font-size: 21px; line-height: 1.55; margin-bottom: 16px; }
+  .threads { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .thread-tag { display: inline-flex; align-items: center; gap: 6px; }
+  .thread-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--label-red); }
+
+  .works-head { display: flex; align-items: baseline; gap: 16px; padding-top: 36px; border-top: 1px solid var(--ink-faint); margin-bottom: 32px; }
+  .works-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-fade); text-transform: uppercase; }
+  .works-title { font-weight: 500; font-size: 24px; }
+  .works-note { font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade); margin-left: auto; }
+
+  /* —— 三卡排满一行 —— */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    background: var(--cream-card);
+    border: 1px solid var(--ink-faint);
+    transition: transform 0.55s cubic-bezier(0.2, 0.85, 0.25, 1), box-shadow 0.55s cubic-bezier(0.2, 0.85, 0.25, 1);
+  }
+  a.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(58, 52, 42, 0.13);
+  }
+  .card.wip { opacity: 0.8; }
+
+  /* 封面 1:1，像唱片套正面 */
+  .cover {
+    background: var(--kraft);
+    border-bottom: 1px solid var(--ink-faint);
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cover svg { width: 72%; height: 72%; }
+
+  .card-text { padding: 22px 24px 26px; display: flex; flex-direction: column; flex: 1; }
+  .card-meta {
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.1em;
+    color: var(--ink-fade); text-transform: uppercase;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+  }
+  .badge { padding: 1px 7px; border-radius: 2px; font-size: 10px; }
+  .badge.live { background: var(--label-red); color: var(--cream); }
+  .badge.wip-b { background: var(--kraft); color: var(--ink); }
+  .card-text h3 { font-weight: 500; font-size: 22px; line-height: 1.3; margin-bottom: 5px; }
+  .title-sub { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-fade); margin-bottom: 12px; }
+  .card-text p { font-size: 14px; line-height: 1.75; color: var(--ink-soft); }
+
+  .designer-line {
+    font-size: 13.5px; color: var(--ink-fade); font-style: italic;
+    margin-bottom: 72px;
+  }
+
+  .about { padding-top: 36px; border-top: 1px solid var(--ink-faint); margin-bottom: 60px; max-width: 720px; }
+  .about-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-fade); text-transform: uppercase; display: block; margin-bottom: 16px; }
+  .about p { font-size: 15.5px; line-height: 1.8; color: var(--ink-soft); margin-bottom: 16px; }
+  .contacts { font-family: var(--font-mono); font-size: 12.5px; display: flex; gap: 22px; margin-top: 18px; }
+  .contacts a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--ink-faint); padding-bottom: 1px; }
+  .contacts a:hover { color: var(--label-red); border-color: var(--label-red); }
+
+  footer {
+    border-top: 1px solid var(--ink-faint); padding-top: 22px;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade);
+  }
+
+  @media (max-width: 980px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 56px 22px 48px; }
+    .name-row { flex-direction: column; gap: 4px; }
+    .name-en { font-size: 36px; }
+    .tagline { font-size: 18px; }
+    .grid { grid-template-columns: 1fr; gap: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="name-row">
+    <span class="name-en">DrumFeather</span>
+    <span class="name-cn">鼓羽</span>
+  </div>
+  <p class="tagline">Four threads, one workshop. I'm exploring how they cross.</p>
+  <div class="threads">
+    <span class="thread-tag"><span class="thread-dot"></span>Designer</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Sound design beginner</span>
+    <span class="thread-tag"><span class="thread-dot"></span>Drum enthusiast</span>
+    <span class="thread-tag"><span class="thread-dot"></span>AI Craft practitioner</span>
+  </div>
+</header>
+
+<div class="works-head">
+  <span class="works-label">Works</span>
+  <span class="works-title">作品</span>
+  <span class="works-note">3 pieces · more coming</span>
+</div>
+
+<div class="grid">
+
+  <!-- Jazz -->
+  <a class="card" href="https://chen-house.github.io/sound-water-system/" target="_blank" rel="noopener">
+    <div class="cover">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <circle cx="100" cy="100" r="66" stroke="#3a342a" stroke-width="1.6"/>
+        <circle cx="100" cy="100" r="53" stroke="rgba(58,52,42,0.35)" stroke-width="1"/>
+        <g stroke="#3a342a" stroke-width="1.4">
+          <line x1="100" y1="28" x2="100" y2="39"/>
+          <line x1="151" y1="49" x2="143" y2="57"/>
+          <line x1="172" y1="100" x2="161" y2="100"/>
+          <line x1="151" y1="151" x2="143" y2="143"/>
+          <line x1="100" y1="172" x2="100" y2="161"/>
+          <line x1="49" y1="151" x2="57" y2="143"/>
+          <line x1="28" y1="100" x2="39" y2="100"/>
+          <line x1="49" y1="49" x2="57" y2="57"/>
+        </g>
+        <line x1="100" y1="100" x2="180" y2="44" stroke="#3a342a" stroke-width="2.4" stroke-linecap="round"/>
+        <circle cx="180" cy="44" r="4.5" fill="#3a342a"/>
+        <circle cx="100" cy="100" r="4" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-text">
+      <div class="card-meta"><span>Story · Interactive</span><span>2026</span><span class="badge live">Live</span></div>
+      <h3>Jazz 1899 — 1969</h3>
+      <div class="title-sub">A drum-dial through 100 years of jazz</div>
+      <p>拖动鼓棒切换九段爵士时代，每段一首代表曲 30 秒预览自动播放。鼓盘做主视觉，因为鼓是这百年里唯一不曾让位的乐器。</p>
+    </div>
+  </a>
+
+  <!-- 声音设计学习站 -->
+  <a class="card" href="https://chen-house.github.io/timbre-explorer/" target="_blank" rel="noopener">
+    <div class="cover">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <path d="M24 78 q12 -34 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="#3a342a" stroke-width="1.8"/>
+        <path d="M24 112 q12 -17 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="rgba(58,52,42,0.5)" stroke-width="1.4"/>
+        <path d="M24 142 q12 -8 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t8 0" stroke="rgba(58,52,42,0.3)" stroke-width="1.2" stroke-dasharray="3 4"/>
+        <circle cx="100" cy="78" r="3.5" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-text">
+      <div class="card-meta"><span>Notes · Hub</span><span>2025—ongoing</span><span class="badge live">Live</span></div>
+      <h3>声音设计学习站</h3>
+      <div class="title-sub">Sound design notes — make sound come alive</div>
+      <p>三个章节：效果器、音色、氛围色。理论根据 + 实操经验 + 可交互的音频演示，每一个主张都标明依据。</p>
+    </div>
+  </a>
+
+  <!-- SoundBrush -->
+  <div class="card wip">
+    <div class="cover">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <path d="M30 146 C 62 106, 86 98, 112 102" stroke="#3a342a" stroke-width="7" stroke-linecap="round"/>
+        <path d="M112 102 q9 -20 18 0 t18 0 t18 0" stroke="#3a342a" stroke-width="1.8"/>
+        <line x1="30" y1="146" x2="16" y2="160" stroke="#3a342a" stroke-width="2.2" stroke-linecap="round"/>
+        <circle cx="166" cy="102" r="3.5" fill="#c1463a"/>
+      </svg>
+    </div>
+    <div class="card-text">
+      <div class="card-meta"><span>Tool · WebApp</span><span>2026</span><span class="badge wip-b">WIP</span></div>
+      <h3>SoundBrush · 声音笔刷</h3>
+      <div class="title-sub">Express what words can't, with sound</div>
+      <p>当语言一时之间表达不出此刻的情绪，用声音替你说出来。A small instrument for moments when language falls short.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="designer-line">Designer 的视角贯穿以上三件作品，专项产出在路上 — first piece in the works.</p>
+
+<section class="about">
+  <span class="about-label">About</span>
+  <p>在四个方向上同时探索：设计、声音设计、玩鼓、用 AI 做长 craft。这个站记录探索过程产出的东西。</p>
+  <p>Four threads at once: design, sound design, drums, AI-built craft. This site is where the work-in-progress lives.</p>
+  <div class="contacts">
+    <a href="mailto:greenlemon.yuan@gmail.com">Email</a>
+    <a href="https://github.com/chen-house" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</section>
+
+<footer>
+  <span>Made by DrumFeather · 鼓羽 · 2026</span>
+  <span>Built with Claude Code</span>
+</footer>
+
+</div>
+</body>
+</html>

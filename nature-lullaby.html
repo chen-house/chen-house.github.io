@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大自然里的童谣 · ChenListen 晨听</title>
+<link rel="icon" href="assets/tingye-icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Long+Cang&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #ede5d2;
+    --paper: #f7f1e3;
+    --ink: #3a342a;
+    --ink-soft: rgba(58, 52, 42, 0.66);
+    --ink-fade: rgba(58, 52, 42, 0.38);
+    --ink-faint: rgba(58, 52, 42, 0.22);
+    --label-red: #c1463a;
+    --fir: #2c5238;
+    --font-serif: 'Noto Serif SC', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-hand: 'Long Cang', cursive;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--cream); color: var(--ink); font-family: var(--font-serif); line-height: 1.8; -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 56px 24px 72px; }
+
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 44px; }
+  .back-link { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid var(--ink-faint); padding-bottom: 1px; }
+  .back-link:hover { color: var(--label-red); border-color: var(--label-red); }
+  .top .label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; color: var(--ink-fade); text-transform: uppercase; }
+
+  .player {
+    background: var(--paper); border: 1px solid var(--ink-faint);
+    box-shadow: 0 2px 14px rgba(58, 52, 42, 0.08); padding: 12px;
+  }
+  video { display: block; width: 100%; height: auto; background: #1c1a15; }
+
+  .letter { max-width: 620px; margin: 40px auto 0; text-align: center; }
+  h1 { font-weight: 500; font-size: 26px; margin-bottom: 4px; }
+  .en { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-fade); display: block; margin-bottom: 26px; }
+  .msg { font-family: var(--font-hand); font-size: 24px; line-height: 1.7; color: var(--ink-soft); margin-bottom: 26px; }
+  .from { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink-fade); }
+  .from b { font-weight: 400; color: var(--ink-soft); }
+
+  footer { margin-top: 72px; border-top: 1px solid var(--ink-faint); padding-top: 18px; font-family: var(--font-mono); font-size: 11px; color: var(--ink-fade); display: flex; justify-content: space-between; }
+  @media (max-width: 640px) { .msg { font-size: 20px; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <a class="back-link" href="index.html">← 回到墙上</a>
+    <span class="label">Field Recording · 005</span>
+  </div>
+
+  <div class="player">
+    <video controls preload="metadata" playsinline poster="assets/lullaby_poster.jpg">
+      <source src="assets/lullaby_full.mp4" type="video/mp4">
+      你的浏览器不支持视频播放。
+    </video>
+  </div>
+
+  <div class="letter">
+    <h1>大自然里的童谣</h1>
+    <span class="en">AMBIENT · RECORDED OUTDOORS · 1'26"</span>
+    <p class="msg">清晨、溪水、山里的风，还有一只不知名的鸟。<br>大自然给的曲子，我只是录下来，再多说一句。</p>
+    <p class="from">FROM <b>晨听 · ChenListen</b> · TO 需要安静一会儿的你</p>
+  </div>
+
+  <footer>
+    <span>ChenListen · 2026</span>
+    <span>№ 005 / 陆续放出</span>
+  </footer>
+
+</div>
+</body>
+</html>
